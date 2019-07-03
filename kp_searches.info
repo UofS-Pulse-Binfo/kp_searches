@@ -1,0 +1,9 @@
+name = KnowPulse Searches
+description = Provides custom searches for KnowPulse
+core = 7.x
+package = Chado Custom Search
+dependencies[] = tripal
+dependencies[] = tripal_chado
+dependencies[] = chado_custom_search
+
+// EXAMPLE: files[] = examples/BreedingCrossSearch.inc
