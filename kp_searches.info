@@ -6,4 +6,4 @@ dependencies[] = tripal
 dependencies[] = tripal_chado
 dependencies[] = chado_custom_search
 
-// EXAMPLE: files[] = examples/BreedingCrossSearch.inc
+files[] = includes/GeneticMarkerSearch.inc
