@@ -1,0 +1,13 @@
+/**
+ * CSS will be applied to all KnowPulse Searches.
+ */
+
+/* - Ensure all select boxes are the same length. */
+#chado-custom-search-form .form-item select {
+  width: 300px;
+}
+
+/* - Make the filter element help italicized. */
+#chado-custom-search-form .form-item .description {
+  font-style: italic;
+}
