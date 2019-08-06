@@ -103,11 +103,23 @@ class GeneticMarkerSearch extends ChadoCustomSearch {
       'type' => [
         'title' => 'Marker Type',
         'help' => 'The type of marker you are interested in (e.g. Illumina Golden Gate).',
-        'default' => 'Exome Capture',
+        //'default' => 'Exome Capture',
       ],
       'project' => [
         'title' => 'Experiment',
         'help' => 'The experiment you are interested in (e.g. AGILE; partial names are accepted).',
+      ],
+      'start-backbone' => [
+        'title' => 'Start: Backbone',
+        'help' => 'The name of the sequence the markers are located on.'
+      ],
+      'start-pos' => [
+        'title' => 'Start: Position',
+        'help' => 'The numeric start position of the range you are interested in.'
+      ],
+      'end-pos' => [
+        'title' => 'End: Position',
+        'help' => 'The numeric end position of the range you are interested in.'
       ],
       'name' => [
         'title' => 'Name',
@@ -167,7 +179,61 @@ class GeneticMarkerSearch extends ChadoCustomSearch {
     // DEPENDENCY: nd_genotypes.
     $form['project']['#autocomplete_path'] = 'tripal_ajax/nd_genotypes/project/name';
 
+    // Add a sequence range element.
+    $description = 'The range of the genome you would like to display variants from.';
+    $form['seq_range'] = array(
+      '#type' => 'markup',
+      '#prefix' => '<div class="seq-range-element form-item"><label>Genome Range</label>',
+      '#suffix' => '<div class="description">' . $description . '</div></div>',
+    );
+    // Group the sequence range elements.
+    $form['seq_range']['start-label'] = [
+      '#type' => 'item',
+      '#markup' => 'From',
+    ];
+    $form['seq_range']['start-backbone'] = $form['start-backbone'];
+    $form['seq_range']['start-backbone']['#attributes']['placeholder'] = 'Sequence Name';
+    unset($form['start-backbone']);
+    $form['seq_range']['start-pos'] = $form['start-pos'];
+    $form['seq_range']['start-pos']['#attributes']['placeholder'] = 'Start Position';
+    unset($form['start-pos']);
+    $form['seq_range']['end-label'] = [
+      '#type' => 'item',
+      '#markup' => 'to',
+    ];
+    $form['seq_range']['end-pos'] = $form['end-pos'];
+    $form['seq_range']['end-pos']['#attributes']['placeholder'] = 'End Position';
+    unset($form['end-pos']);
+
     return $form;
+  }
+
+  /**
+   * Allows custom searches to validate the form results.
+   * Use form_set_error() to signal invalid values.
+   */
+  public function validateForm($form, $form_state) {
+    $values = $form_state['values'];
+
+    // If any of the range elements are filled out...
+    if ($values['start-backbone'] != ''
+      OR $values['start-pos'] != ''
+      OR $values['end-pos'] != '') {
+
+      // Then they all need to be!
+      if ($values['start-backbone'] == '') {
+        form_set_error('start-backbone',
+          'Genome Range: The sequence name is required.');
+      }
+      if ($values['start-pos'] == '') {
+        form_set_error('start-pos',
+          'Genome Range: The range start position is required.');
+      }
+      if ($values['end-pos'] == '') {
+        form_set_error('end-pos',
+          'Genome Range: The range end position is required.');
+      }
+    }
   }
 
   /**
@@ -184,18 +250,19 @@ class GeneticMarkerSearch extends ChadoCustomSearch {
 
     // Retrieve the filter results already set.
     $filter_results = $this->values;
+    // @debug dpm($filter_results, '$filter_results');
 
     $query = "
       SELECT marker.feature_id, marker.name as name, type.value as type, o.organism_id, o.genus||' '||o.species as species
       FROM {feature} marker
       LEFT JOIN {organism} o ON o.organism_id=marker.organism_id
       LEFT JOIN {featureprop} type ON type.feature_id = marker.feature_id
-      LEFT JOIN {project_feature} pf ON pf.feature_id=marker.feature_id
-      LEFT JOIN {project} project ON project.project_id=pf.project_id
         AND type.type_id IN
-          (SELECT cvterm_id FROM chado.cvterm WHERE name='additionalType')";
+          (SELECT cvterm_id FROM chado.cvterm WHERE name='additionalType') ";
 
-    $where = [];
+    $where = ["marker.type_id IN (SELECT cvterm_id FROM {cvterm} WHERE name='genetic_marker')"];
+    $joins = [];
+
     // -- Species.
     if ($filter_results['species'] != '') {
       $where[] = "o.genus||' '||o.species ~ :species";
@@ -212,6 +279,8 @@ class GeneticMarkerSearch extends ChadoCustomSearch {
     if ($filter_results['project'] != '') {
       $where[] = "project.name ~ :project";
       $args[':project'] = $filter_results['project'];
+      $joins[] = 'LEFT JOIN {project_feature} pf ON pf.feature_id=marker.feature_id';
+      $joins[] = 'LEFT JOIN {project} project ON project.project_id=pf.project_id';
     }
 
     // -- Name.
@@ -220,16 +289,36 @@ class GeneticMarkerSearch extends ChadoCustomSearch {
       $args[':name'] = $filter_results['name'];
     }
 
+    // -- Genome Range.
+    if ($filter_results['start-pos'] != ''
+      AND $filter_results['end-pos'] != '') {
+
+        $joins[] = 'LEFT JOIN {featureloc} loc
+          ON loc.feature_id=marker.feature_id';
+        $where[] = 'loc.fmin BETWEEN :start AND :end';
+        $args[':start'] = $filter_results['start-pos'];
+        $args[':end'] = $filter_results['end-pos'];
+        $where[] = 'loc.srcfeature_id IN
+          (SELECT feature_id FROM {feature}
+          WHERE name=:backbone OR uniquename=:backbone)';
+        $args[':backbone'] = $filter_results['start-backbone'];
+    }
+
     // Finally, add it to the query.
+    if (!empty($joins)) {
+      $query .= implode("\n",$joins);
+    }
     if (!empty($where)) {
-      $query .= ' WHERE ' . implode(' AND ',$where);
+      $query .= "\n" . ' WHERE ' . implode(' AND ',$where);
     }
 
     // Sort even though it is SLOW b/c ppl expect it.
-    $query .= ' ORDER BY marker.name ASC';
+    $query .= "\n" . ' ORDER BY marker.name ASC';
 
     // Handle paging.
     $limit = $this::$num_items_per_page + 1;
-    $query .= ' LIMIT ' . $limit . ' OFFSET ' . $offset;
+    $query .= "\n" . ' LIMIT ' . $limit . ' OFFSET ' . $offset;
+
+    // @debug dpm(strtr(str_replace(['{','}'], ['chado.', ''], $query), $args), 'query');
   }
 }
