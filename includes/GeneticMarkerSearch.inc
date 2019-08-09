@@ -148,7 +148,8 @@ class GeneticMarkerSearch extends ChadoCustomSearch {
 
     // Make the species a drop-down.
     $options = chado_query("SELECT genus||' '||species
-      FROM {organism}")->fetchAllKeyed(0,0);
+      FROM {organism}
+      ORDER BY genus ASC, species ASC")->fetchAllKeyed(0,0);
     $form['species']['#type'] = 'select';
     $form['species']['#options'] = $options;
     $form['species']['#empty_option'] = ' - Select -';
