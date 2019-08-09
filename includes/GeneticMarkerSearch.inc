@@ -39,7 +39,7 @@ class GeneticMarkerSearch extends ChadoCustomSearch {
    * NOTE: to control the results without parameters check $this->submitted
    * in getQuery() and if FALSE return your pre-submit query.
    */
-  public static $require_submit = FALSE;
+  public static $require_submit = TRUE;
 
   /**
    * Add a pager to search results
@@ -47,7 +47,7 @@ class GeneticMarkerSearch extends ChadoCustomSearch {
    * NOTE: Your query has to handle paging.
    */
   public static $pager = TRUE;
-  public static $num_items_per_page = 25;
+  public static $num_items_per_page = 50;
 
   /**
    * This defined the hook_menu definition for this search. At a minimum the
@@ -154,23 +154,7 @@ class GeneticMarkerSearch extends ChadoCustomSearch {
     $form['species']['#empty_option'] = ' - Select -';
 
     // Make the marker type a drop-down.
-    $query = "WITH RECURSIVE t AS (
-      (SELECT value
-        FROM {featureprop}
-        ORDER BY value
-        LIMIT 1)
-      UNION ALL
-      SELECT
-          (SELECT value
-            FROM {featureprop}
-            WHERE value > t.value
-            ORDER BY value
-            LIMIT 1)
-        FROM t
-        WHERE t.value IS NOT NULL
-    )
-    SELECT t.value FROM t WHERE t.value IS NOT NULL";
-    $options = chado_query($query)->fetchAllKeyed(0,0);
+    $options = unserialize(variable_get('kp_searches_marker_types', 'a:0{}'));
     $form['type']['#type'] = 'select';
     $form['type']['#options'] = $options;
     $form['type']['#empty_option'] = ' - Select -';

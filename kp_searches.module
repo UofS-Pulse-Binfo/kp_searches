@@ -20,3 +20,48 @@
 
    return $searches;
  }
+
+/**
+ * Save options used in search form using variable_get/set().
+ */
+function kp_searches_cache_options() {
+
+  //-------------------------
+  // Genetic Marker Types.
+  // We want ot use ND Genotypes list but that is broken down into partition.
+  // Thus we are first going to get a list of all partitions and then merge
+  // each list. We are going this route b/c it's non-trivial to determine which
+  // type featureprops are for markers and which are for variants.
+  // -- Retrieve a list of all partitions.
+  $query = "WITH RECURSIVE t AS (
+      (SELECT partition
+        FROM {mview_ndg_germplasm_genotyped}
+        ORDER BY partition
+        LIMIT 1)
+      UNION ALL
+      SELECT
+          (SELECT partition
+            FROM {mview_ndg_germplasm_genotyped}
+            WHERE partition > t.partition
+            ORDER BY partition
+            LIMIT 1)
+        FROM t
+        WHERE t.partition IS NOT NULL
+    )
+    SELECT t.partition FROM t WHERE t.partition IS NOT NULL";
+  $partitions = chado_query($query)->fetchCol();
+  // -- Retieve marker type options for all partitions.
+  $marker_types = [];
+  foreach ($partitions as $partition_name) {
+    $curr_partition_types = variable_get(
+      'nd_genotypes_'.$partition_name.'_marker_types',
+      'a:0{}'
+    );
+    if (!empty($curr_partition_types)) {
+      $marker_types = array_merge($marker_types, unserialize($curr_partition_types));
+    }
+  }
+  // -- Finally, Save the options!
+  variable_set('kp_searches_marker_types', serialize($marker_types));
+
+}
