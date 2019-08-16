@@ -8,3 +8,4 @@ dependencies[] = chado_custom_search
 
 files[] = includes/GeneticMarkerSearch.inc
 files[] = includes/GermplasmSearch.inc
+files[] = includes/BreedingCrossSearch.inc

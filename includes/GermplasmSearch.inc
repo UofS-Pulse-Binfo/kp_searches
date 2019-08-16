@@ -88,6 +88,9 @@ class GermplasmSearch extends ChadoCustomSearch {
           'id_column' => 'stock_id'
         ],
       ],
+      'type' => [
+        'title' => 'Category',
+      ],
       'species' => [
         'title' => 'Source Species',
         'entity_link' => [
@@ -95,10 +98,6 @@ class GermplasmSearch extends ChadoCustomSearch {
           'id_column' => 'organism_id'
         ],
       ],
-      'type' => [
-        'title' => 'Category',
-      ],
-
     ],
     // The filter criteria available to the user.
     // This is used to generate a search form which can be altered.
@@ -266,6 +265,7 @@ class GermplasmSearch extends ChadoCustomSearch {
     }
 
     $form['scientific_name']['genus'] = $form['genus'];
+    $form['scientific_name']['genus']['#required'] = TRUE;
     $form['scientific_name']['genus']['#type'] = 'select';
     $form['scientific_name']['genus']['#options'] = $genus_options;
     $form['scientific_name']['genus']['#empty_option'] = '- Select Genus -';
