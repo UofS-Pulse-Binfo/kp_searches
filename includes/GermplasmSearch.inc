@@ -301,6 +301,7 @@ class GermplasmSearch extends ChadoCustomSearch {
    *   placeholders in the query and values should be what you want them set to.
    */
   public function getQuery(&$query, &$args, $offset) {
+    global $user;
 
     // Retrieve the filter results already set.
     $filter_results = $this->values;
@@ -337,6 +338,27 @@ class GermplasmSearch extends ChadoCustomSearch {
     if ($filter_results['name'] != '') {
       $where[] = "(s.name ~ :name OR s.uniquename = :name)";
       $args[':name'] = $filter_results['name'];
+    }
+
+    // -- ADD IN ACCESS CONTROL!
+    // Only use access control for non administrators. This is put in place to
+    // allow administrators to see content "on the cutting room floor"
+    // (i.e. not of any given type).
+    $administrator = array_search('administrator', $user->roles);
+    if (!$administrator) {
+      // See https://github.com/tripal/tripal/blob/7.x-3.x/tripal/includes/tripal.entity.inc#L495
+      $entity_types = db_query("SELECT cb.bundle_id FROM chado_bundle cb
+        WHERE cb.data_table = 'stock'")->fetchCol();
+      // Only includes bundles the current user has access to.
+      $available_bundles = [];
+      foreach($entity_types as $bundle_id) {
+        $bundle_name = 'bio_data_' . $bundle_id;
+        if (user_access('view ' . $bundle_name)) {
+          $available_bundles[] = $bundle_id;
+        }
+      }
+      $where[] = 'cb.bundle_id IN (:bundle_ids)';
+      $args[':bundle_ids'] = $available_bundles;
     }
 
     // Finally, add it to the query.
