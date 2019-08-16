@@ -17,6 +17,7 @@
 
    // EXAMPLE: $searches['BreedingCrossSearch'] = 'Breeding Cross Search';
    $searches['GeneticMarkerSearch'] = 'Genetic Marker Search';
+   $searches['GermplasmSearch'] = 'Germplasm Search';
 
    return $searches;
  }
@@ -25,6 +26,59 @@
  * Save options used in search form using variable_get/set().
  */
 function kp_searches_cache_options() {
+
+  // Crops.
+  //-------------------------
+  // These are hard-coded since we do not want the full list of organisms.
+  $crop_options = [
+    'Cicer' => [
+      'title' => 'Chickpea',
+      'genus' => 'Cicer',
+      'crop-species' => 'arietinum',
+      'image' => '/sites/all/modules/custom/kp_frontpage/images/kphome/crops-chickpea.jpg',
+    ],
+    'Lens' => [
+      'title' => 'Lentil',
+      'genus' => 'Lens',
+      'crop-species' => 'culinaris',
+      'image' => '/sites/all/modules/custom/kp_frontpage/images/kphome/crops-cultivated-lentil.jpg',
+    ],
+    'Phaseolus' => [
+      'title' => 'Dry Bean',
+      'genus' => 'Phaseolus',
+      'crop-species' => 'vulgaris',
+      'image' => '/sites/all/modules/custom/kp_frontpage/images/kphome/crops-dry-bean.jpg',
+    ],
+    'Vicia' => [
+      'title' => 'Faba Bean',
+      'genus' => 'Vicia',
+      'crop-species' => 'faba',
+      'image' => '/sites/all/modules/custom/kp_frontpage/images/kphome/crops-faba-bean.jpg',
+    ],
+    'Pisum' => [
+      'title' => 'Field Pea',
+      'genus' => 'Pisum',
+      'crop-species' => 'sativum',
+      'image' => '/sites/all/modules/custom/kp_frontpage/images/kphome/crops-pea.jpg',
+    ],
+  ];
+  // Now add in the rest of the species.
+  $sql = 'SELECT genus, species FROM {organism} ORDER BY genus, species';
+  $resource = chado_query($sql);
+  foreach ($resource as $r) {
+    if (isset($crop_options[ $r->genus ])) {
+      $crop_options[ $r->genus ]['species'][ $r->species ] = $r->species;
+    }
+  }
+  variable_set('kp_searches_crop_options', serialize($crop_options));
+
+  // Germplasm Types.
+  //-------------------------
+  $options = db_query("SELECT cb.type_id, tb.label
+    FROM chado_bundle cb
+    LEFT JOIN tripal_bundle tb ON tb.id=cb.bundle_id
+    WHERE cb.data_table = 'stock'")->fetchAllKeyed(0,1);
+  variable_set('kp_searches_germplasm_type_options', serialize($options));
 
   //-------------------------
   // Genetic Marker Types.

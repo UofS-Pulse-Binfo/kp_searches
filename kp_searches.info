@@ -7,3 +7,4 @@ dependencies[] = tripal_chado
 dependencies[] = chado_custom_search
 
 files[] = includes/GeneticMarkerSearch.inc
+files[] = includes/GermplasmSearch.inc
