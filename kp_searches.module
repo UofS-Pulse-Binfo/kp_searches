@@ -6,6 +6,11 @@
  * This file will not include the searches themselves.
  */
 
+require_once 'includes/GeneticMarkerSearch.inc';
+require_once 'includes/GermplasmSearch.inc';
+require_once 'includes/BreedingCrossSearch.inc';
+require_once 'includes/CultivarSearch.inc';
+
  /**
   * Implement hook_chado_custom_search().
   *
@@ -19,6 +24,7 @@
    $searches['GeneticMarkerSearch'] = 'Genetic Marker Search';
    $searches['GermplasmSearch'] = 'Germplasm Search';
    $searches['BreedingCrossSearch'] = 'Breeding Cross Search';
+   $searches['CultivarSearch'] = 'Cultivar Search';
 
    return $searches;
  }
