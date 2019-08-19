@@ -109,6 +109,14 @@ class BreedingCrossSearch extends GermplasmSearch {
         'title' => 'Species',
         'help' => 'The legume species the germplasm belongs to (e.g. culinaris).',
       ],
+      'crossingblock_year' => [
+        'title' => 'Crossing Block Year',
+        'help' => 'The year of the crossing block you are interested in.',
+      ],
+      'crossingblock_season' => [
+        'title' => 'Crossing Block Season',
+        'help' => 'The season of the crossing block you are interested in.',
+      ],
       'name' => [
         'title' => 'Name',
         'help' => 'The name or accession of the germplasm (e.g. CDC Redberry; partial names are accepted).',
@@ -139,6 +147,46 @@ class BreedingCrossSearch extends GermplasmSearch {
 
     // Add a Scientific name selector.
     $this->addSpeciesFormElement($form, $form_state);
+
+    // Make the crossing block filter more intuitive.
+    $description = 'The block of crosses you are interested in. Specifically, this is the year/season that the seed from the original cross was generated in.';
+    $form['crossingblock'] = array(
+      '#type' => 'markup',
+      '#prefix' => '<div class="crossingblock-element form-item"><label>Crossing Block</label>',
+      '#suffix' => '<div class="description">' . $description . '</div></div>',
+      '#weight' => -7,
+    );
+
+    $q = drupal_get_query_parameters();
+    if (isset($form_state['values'])) {
+      $cbyear_default = $form_state['values']['crossingblock_year'];
+      $cbseason_default = $form_state['values']['crossingblock_season'];
+    }
+    elseif (isset($q['crossingblock_year'])) {
+      $cbyear_default = $q['crossingblock_year'];
+      $cbseason_default = $q['crossingblock_season'];
+    }
+    else {
+      $cbyear_default = date('Y');
+      $cbseason_default = NULL;
+    }
+
+    $seasons_flat = ['Winter', 'Spring', 'Summer', 'Fall'];
+    $seasons = array_combine($seasons_flat, $seasons_flat);
+    $form['crossingblock']['crossingblock_season'] = $form['species'];
+    $form['crossingblock']['crossingblock_season']['#type'] = 'select';
+    $form['crossingblock']['crossingblock_season']['#options'] = $seasons;
+    $form['crossingblock']['crossingblock_season']['#empty_option'] = '- Select Season -';
+    $form['crossingblock']['crossingblock_season']['#default_value'] = $cbseason_default;
+    unset($form['crossingblock_season']);
+    
+    $years = array_combine(range(date("Y"), 1996), range(date("Y"), 1996));
+    $form['crossingblock']['crossingblock_year'] = $form['species'];
+    $form['crossingblock']['crossingblock_year']['#type'] = 'select';
+    $form['crossingblock']['crossingblock_year']['#options'] = $years;
+    $form['crossingblock']['crossingblock_year']['#empty_option'] = '- Select Year -';
+    $form['crossingblock']['crossingblock_year']['#default_value'] = $cbyear_default;
+    unset($form['crossingblock_year']);
 
     return $form;
   }
@@ -210,6 +258,18 @@ class BreedingCrossSearch extends GermplasmSearch {
     if ($filter_results['name'] != '') {
       $where[] = "(s.name ~ :name OR s.uniquename = :name)";
       $args[':name'] = $filter_results['name'];
+    }
+
+    // -- Crossing Block Year.
+    if ($filter_results['crossingblock_year'] != '') {
+      $where[] = "cbyear.value = :cbyear";
+      $args[':cbyear'] = $filter_results['crossingblock_year'];
+    }
+
+    // -- Crossing Block Season.
+    if ($filter_results['crossingblock_season'] != '') {
+      $where[] = "cbseason.value = :cbseason";
+      $args[':cbseason'] = $filter_results['crossingblock_season'];
     }
 
     // Finally, add it to the query.

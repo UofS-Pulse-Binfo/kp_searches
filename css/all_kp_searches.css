@@ -33,7 +33,7 @@
 }
 
 /**
- * Germplasm Search.
+ * Germplasm Searches.
  */
 
 /*  - Crop            */
@@ -76,4 +76,19 @@
 }
 #chado-custom-search-form .scientific-name-element select#edit-species {
   width: 275px;
+}
+
+/*  - Crossing Block   */
+#chado-custom-search-form .crossingblock-element .form-item label {
+  display: none;
+}
+#chado-custom-search-form .crossingblock-element .form-item .description {
+  display: none;
+}
+#chado-custom-search-form .crossingblock-element .form-item {
+  display: inline-block;
+  margin-bottom: 2px;
+}
+#chado-custom-search-form .crossingblock-element select {
+  width: 225px;
 }
