@@ -91,6 +91,9 @@ class GermplasmSearch extends ChadoCustomSearch {
       'type' => [
         'title' => 'Category',
       ],
+      'source_institute' => [
+        'title' => 'Source Institute',
+      ],
       'species' => [
         'title' => 'Source Species',
         'entity_link' => [
@@ -113,6 +116,10 @@ class GermplasmSearch extends ChadoCustomSearch {
       'type' => [
         'title' => 'Category',
         'help' => 'The category this germplasm belongs to (e.g. Breeding Cross).',
+      ],
+      'source_institute' => [
+        'title' => 'Source Institute',
+        'help' => 'The institute the germplasm was developed or collected by.'
       ],
       'name' => [
         'title' => 'Name',
@@ -307,9 +314,16 @@ class GermplasmSearch extends ChadoCustomSearch {
     $filter_results = $this->values;
     // @debug dpm($filter_results, '$filter_results');
 
-    $query = "SELECT o.genus||' '||o.species as species, o.organism_id, s.name, s.uniquename, s.stock_id, tb.label as type
+    $query = "SELECT
+        o.genus||' '||o.species as species,
+        o.organism_id,
+        s.name, s.uniquename,
+        s.stock_id,
+        tb.label as type,
+        source.value as source_institute
       FROM {stock} s
       LEFT JOIN {organism} o ON o.organism_id=s.organism_id
+      LEFT JOIN {stockprop} source ON source.stock_id=s.stock_id AND source.type_id=3711
       LEFT JOIN chado_bundle cb ON cb.type_id=s.type_id
       LEFT JOIN tripal_bundle tb ON tb.id=cb.bundle_id";
 
@@ -332,6 +346,12 @@ class GermplasmSearch extends ChadoCustomSearch {
     if ($filter_results['type'] != '') {
       $where[] = "(s.type_id = :type)";
       $args[':type'] = $filter_results['type'];
+    }
+
+    // -- Source Institute.
+    if ($filter_results['source_institute'] != '') {
+      $where[] = "source.value ~ :source_institute";
+      $args[':source_institute'] = $filter_results['source_institute'];
     }
 
     // -- Name.

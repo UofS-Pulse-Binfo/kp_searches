@@ -218,7 +218,7 @@ class CultivarSearch extends GermplasmSearch {
       $args[':species'] = $filter_results['species'];
     }
 
-    // -- Species.
+    // -- Source Institute.
     if ($filter_results['source_institute'] != '') {
       $where[] = "source.value ~ :source_institute";
       $args[':source_institute'] = $filter_results['source_institute'];
