@@ -117,6 +117,14 @@ class BreedingCrossSearch extends GermplasmSearch {
         'title' => 'Crossing Block Season',
         'help' => 'The season of the crossing block you are interested in.',
       ],
+      'mom' => [
+        'title' => 'Maternal Parent',
+        'help' => 'The maternal parent of the germplasm you are interested in.'
+      ],
+      'dad' => [
+        'title' => 'Paternal Parent',
+        'help' => 'The paternal parent of the germplasm you are interested in.'
+      ],
       'name' => [
         'title' => 'Name',
         'help' => 'The name or accession of the germplasm (e.g. CDC Redberry; partial names are accepted).',
@@ -147,6 +155,9 @@ class BreedingCrossSearch extends GermplasmSearch {
 
     // Add a Scientific name selector.
     $this->addSpeciesFormElement($form, $form_state);
+
+    // Add a Maternal/paternal name selector.
+    $this->addparentageFormElement($form, $form_state);
 
     // Make the crossing block filter more intuitive.
     $description = 'The block of crosses you are interested in. Specifically, this is the year/season that the seed from the original cross was generated in.';
@@ -179,7 +190,7 @@ class BreedingCrossSearch extends GermplasmSearch {
     $form['crossingblock']['crossingblock_season']['#empty_option'] = '- Select Season -';
     $form['crossingblock']['crossingblock_season']['#default_value'] = $cbseason_default;
     unset($form['crossingblock_season']);
-    
+
     $years = array_combine(range(date("Y"), 1996), range(date("Y"), 1996));
     $form['crossingblock']['crossingblock_year'] = $form['species'];
     $form['crossingblock']['crossingblock_year']['#type'] = 'select';
@@ -187,6 +198,9 @@ class BreedingCrossSearch extends GermplasmSearch {
     $form['crossingblock']['crossingblock_year']['#empty_option'] = '- Select Year -';
     $form['crossingblock']['crossingblock_year']['#default_value'] = $cbyear_default;
     unset($form['crossingblock_year']);
+
+    // Move name to the bottom.
+    $form['name']['#weight'] = 10;
 
     return $form;
   }
@@ -270,6 +284,18 @@ class BreedingCrossSearch extends GermplasmSearch {
     if ($filter_results['crossingblock_season'] != '') {
       $where[] = "cbseason.value = :cbseason";
       $args[':cbseason'] = $filter_results['crossingblock_season'];
+    }
+
+    // -- Maternal Parent.
+    if ($filter_results['mom'] != '') {
+      $where[] = "(mom.name ~ :mom OR mom.uniquename = :mom)";
+      $args[':mom'] = $filter_results['mom'];
+    }
+
+    // -- Paternal Parent.
+    if ($filter_results['dad'] != '') {
+      $where[] = "(dad.name ~ :dad OR dad.uniquename = :dad)";
+      $args[':dad'] = $filter_results['dad'];
     }
 
     // Finally, add it to the query.

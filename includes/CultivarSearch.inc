@@ -113,6 +113,14 @@ class CultivarSearch extends GermplasmSearch {
         'title' => 'Source Institute',
         'help' => 'The institute the germplasm was developed or collected by.'
       ],
+      'mom' => [
+        'title' => 'Maternal Parent',
+        'help' => 'The maternal parent of the germplasm you are interested in.'
+      ],
+      'dad' => [
+        'title' => 'Paternal Parent',
+        'help' => 'The paternal parent of the germplasm you are interested in.'
+      ],
       'name' => [
         'title' => 'Name',
         'help' => 'The name or accession of the germplasm (e.g. CDC Redberry; partial names are accepted).',
@@ -143,6 +151,12 @@ class CultivarSearch extends GermplasmSearch {
 
     // Add a Scientific name selector.
     $this->addSpeciesFormElement($form, $form_state);
+
+    // Add a Maternal/paternal name selector.
+    $this->addparentageFormElement($form, $form_state);
+
+    // Move name to the bottom.
+    $form['name']['#weight'] = 10;
 
     return $form;
   }
@@ -222,6 +236,18 @@ class CultivarSearch extends GermplasmSearch {
     if ($filter_results['source_institute'] != '') {
       $where[] = "source.value ~ :source_institute";
       $args[':source_institute'] = $filter_results['source_institute'];
+    }
+
+    // -- Maternal Parent.
+    if ($filter_results['mom'] != '') {
+      $where[] = "(mom.name ~ :mom OR mom.uniquename = :mom)";
+      $args[':mom'] = $filter_results['mom'];
+    }
+
+    // -- Paternal Parent.
+    if ($filter_results['dad'] != '') {
+      $where[] = "(dad.name ~ :dad OR dad.uniquename = :dad)";
+      $args[':dad'] = $filter_results['dad'];
     }
 
     // -- Name.

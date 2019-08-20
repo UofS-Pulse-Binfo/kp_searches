@@ -7,6 +7,10 @@
   width: 450px;
 }
 
+/* - Ensure all textfields match the select boxes in length. */
+#chado-custom-search-form .form-item input {
+  width: 440px;
+}
 /* - Make the filter element help italicized. */
 #chado-custom-search-form .form-item .description {
   font-style: italic;
@@ -91,4 +95,24 @@
 }
 #chado-custom-search-form .crossingblock-element select {
   width: 225px;
+}
+
+/*  - Parentage Filter   */
+#chado-custom-search-form .parentage-element .form-item label {
+  display: none;
+}
+#chado-custom-search-form .parentage-element .form-item .description {
+  display: none;
+}
+#chado-custom-search-form .parentage-element .form-item {
+  display: inline-block;
+  margin-bottom: 2px;
+}
+#chado-custom-search-form .parentage-element input {
+  width: 200px;
+}
+#chado-custom-search-form .parentage-element span.divider {
+  font-weight: bolder;
+  font-size: 1.1em;
+  padding: 0px 10px;
 }

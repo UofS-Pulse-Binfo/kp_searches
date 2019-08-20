@@ -121,6 +121,14 @@ class GermplasmSearch extends ChadoCustomSearch {
         'title' => 'Source Institute',
         'help' => 'The institute the germplasm was developed or collected by.'
       ],
+      'mom' => [
+        'title' => 'Maternal Parent',
+        'help' => 'The maternal parent of the germplasm you are interested in.'
+      ],
+      'dad' => [
+        'title' => 'Paternal Parent',
+        'help' => 'The paternal parent of the germplasm you are interested in.'
+      ],
       'name' => [
         'title' => 'Name',
         'help' => 'The name or accession of the germplasm (e.g. CDC Redberry; partial names are accepted).',
@@ -157,6 +165,13 @@ class GermplasmSearch extends ChadoCustomSearch {
     $form['type']['#type'] = 'select';
     $form['type']['#options'] = $options;
     $form['type']['#empty_option'] = '- Select -';
+    $form['type']['#weight'] = -7;
+
+    // Add a Maternal/paternal name selector.
+    $this->addparentageFormElement($form, $form_state);
+
+    // Move name to the bottom.
+    $form['name']['#weight'] = 10;
 
     return $form;
   }
@@ -290,6 +305,62 @@ class GermplasmSearch extends ChadoCustomSearch {
   }
 
   /**
+   * Adds a Maternal / Paternal Parent filter element.
+   */
+  public function addparentageFormElement(&$form, &$form_state) {
+
+    $description = 'The parents of the germplasm you are interested in (single parents welcomed).';
+    $form['parentage'] = array(
+      '#type' => 'markup',
+      '#prefix' => '<div class="parentage-element form-item"><label>Parentage</label>',
+      '#suffix' => '<div class="description">' . $description . '</div></div>',
+      '#weight' => 9,
+    );
+
+    $q = drupal_get_query_parameters();
+    if (isset($form_state['values'])) {
+      $mom_default = $form_state['values']['mom'];
+      $dad_default = $form_state['values']['dad'];
+    }
+    elseif (isset($q['mom'])) {
+      $mom_default = $q['mom'];
+      $dad_default = $q['dad'];
+    }
+    else {
+      $mom_default = '';
+      $dad_default = '';
+    }
+
+    $form['parentage']['mom'] = $form['mom'];
+    $form['parentage']['mom']['#attributes']['placeholder'] = 'Maternal Parent';
+
+    $form['parentage']['mom']['#default_value'] = $mom_default;
+    unset($form['mom']);
+
+    $form['parentage']['divider'] = [
+      '#type' => 'markup',
+      '#markup' => '/',
+      '#prefix' => '<span class="divider">',
+      '#suffix' => '</span>',
+    ];
+
+    $form['parentage']['dad'] = $form['dad'];
+    $form['parentage']['dad']['#attributes']['placeholder'] = 'Paternal Parent';
+
+    $form['parentage']['dad']['#default_value'] = $dad_default;
+    unset($form['dad']);
+
+    // Add autocompletes if genus is available.
+    if (isset($form['scientific_name']['genus']['#default_value'])
+      AND $form['scientific_name']['genus']['#default_value'] != '') {
+
+      $genus = $form['scientific_name']['genus']['#default_value'];
+      $form['parentage']['mom']['#autocomplete_path'] = 'search/germplasm/autocomplete.json/'.$genus.'/all';
+      $form['parentage']['dad']['#autocomplete_path'] = 'search/germplasm/autocomplete.json/'.$genus.'/all';
+    }
+  }
+
+  /**
    * Allows custom searches to validate the form results.
    * Use form_set_error() to signal invalid values.
    */
@@ -325,7 +396,7 @@ class GermplasmSearch extends ChadoCustomSearch {
       LEFT JOIN {organism} o ON o.organism_id=s.organism_id
       LEFT JOIN {stockprop} source ON source.stock_id=s.stock_id AND source.type_id=3711
       LEFT JOIN chado_bundle cb ON cb.type_id=s.type_id
-      LEFT JOIN tripal_bundle tb ON tb.id=cb.bundle_id";
+      LEFT JOIN tripal_bundle tb ON tb.id=cb.bundle_id ";
 
     $where = [];
     $joins = [];
@@ -358,6 +429,24 @@ class GermplasmSearch extends ChadoCustomSearch {
     if ($filter_results['name'] != '') {
       $where[] = "(s.name ~ :name OR s.uniquename = :name)";
       $args[':name'] = $filter_results['name'];
+    }
+
+    // -- Maternal Parent.
+    if ($filter_results['mom'] != '') {
+      $joins[] = "LEFT JOIN {stock_relationship} momr ON momr.object_id=s.stock_id
+        AND momr.type_id=3632";
+      $joins[] = "LEFT JOIN {stock} mom ON momr.subject_id=mom.stock_id";
+      $where[] = "(mom.name ~ :mom OR mom.uniquename = :mom)";
+      $args[':mom'] = $filter_results['mom'];
+    }
+
+    // -- Paternal Parent.
+    if ($filter_results['dad'] != '') {
+      $joins[] = "LEFT JOIN {stock_relationship} dadr ON dadr.object_id=s.stock_id
+        AND dadr.type_id=3633";
+      $joins[] = "LEFT JOIN {stock} dad ON dadr.subject_id=dad.stock_id";
+      $where[] = "(dad.name ~ :dad OR dad.uniquename = :dad)";
+      $args[':dad'] = $filter_results['dad'];
     }
 
     // -- ADD IN ACCESS CONTROL!
