@@ -121,6 +121,10 @@ class CultivarSearch extends GermplasmSearch {
         'title' => 'Paternal Parent',
         'help' => 'The paternal parent of the germplasm you are interested in.'
       ],
+      'reciprocal_crosses' => [
+        'title' => 'Include reciprocal crosses',
+        'help' => 'Includes both A x B and B x A crosses when using the parentage filter.',
+      ],
       'name' => [
         'title' => 'Name',
         'help' => 'The name or accession of the germplasm (e.g. CDC Redberry; partial names are accepted).',
@@ -222,7 +226,7 @@ class CultivarSearch extends GermplasmSearch {
 
     // -- Genus.
     if ($filter_results['genus'] != '') {
-      $where[] = "o.genus ~ :genus";
+      $where[] = "o.genus ~* :genus";
       $args[':genus'] = $filter_results['genus'];
     }
 
@@ -234,25 +238,16 @@ class CultivarSearch extends GermplasmSearch {
 
     // -- Source Institute.
     if ($filter_results['source_institute'] != '') {
-      $where[] = "source.value ~ :source_institute";
+      $where[] = "source.value ~* :source_institute";
       $args[':source_institute'] = $filter_results['source_institute'];
     }
 
-    // -- Maternal Parent.
-    if ($filter_results['mom'] != '') {
-      $where[] = "(mom.name ~ :mom OR mom.uniquename = :mom)";
-      $args[':mom'] = $filter_results['mom'];
-    }
-
-    // -- Paternal Parent.
-    if ($filter_results['dad'] != '') {
-      $where[] = "(dad.name ~ :dad OR dad.uniquename = :dad)";
-      $args[':dad'] = $filter_results['dad'];
-    }
+    // -- Parents.
+    $this->addParentageQuery($filter_results, $where, $args);
 
     // -- Name.
     if ($filter_results['name'] != '') {
-      $where[] = "(s.name ~ :name OR s.uniquename = :name)";
+      $where[] = "(s.name ~* :name OR s.uniquename = :name)";
       $args[':name'] = $filter_results['name'];
     }
 

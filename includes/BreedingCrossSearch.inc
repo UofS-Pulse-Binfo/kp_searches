@@ -125,6 +125,10 @@ class BreedingCrossSearch extends GermplasmSearch {
         'title' => 'Paternal Parent',
         'help' => 'The paternal parent of the germplasm you are interested in.'
       ],
+      'reciprocal_crosses' => [
+        'title' => 'Include reciprocal crosses',
+        'help' => 'Includes both A x B and B x A crosses when using the parentage filter.',
+      ],
       'name' => [
         'title' => 'Name',
         'help' => 'The name or accession of the germplasm (e.g. CDC Redberry; partial names are accepted).',
@@ -258,19 +262,19 @@ class BreedingCrossSearch extends GermplasmSearch {
 
     // -- Genus.
     if ($filter_results['genus'] != '') {
-      $where[] = "o.genus ~ :genus";
+      $where[] = "o.genus ~* :genus";
       $args[':genus'] = $filter_results['genus'];
     }
 
     // -- Species.
     if ($filter_results['species'] != '') {
-      $where[] = "o.species ~ :species";
+      $where[] = "o.species ~* :species";
       $args[':species'] = $filter_results['species'];
     }
 
     // -- Name.
     if ($filter_results['name'] != '') {
-      $where[] = "(s.name ~ :name OR s.uniquename = :name)";
+      $where[] = "(s.name ~* :name OR s.uniquename = :name)";
       $args[':name'] = $filter_results['name'];
     }
 
@@ -286,17 +290,8 @@ class BreedingCrossSearch extends GermplasmSearch {
       $args[':cbseason'] = $filter_results['crossingblock_season'];
     }
 
-    // -- Maternal Parent.
-    if ($filter_results['mom'] != '') {
-      $where[] = "(mom.name ~ :mom OR mom.uniquename = :mom)";
-      $args[':mom'] = $filter_results['mom'];
-    }
-
-    // -- Paternal Parent.
-    if ($filter_results['dad'] != '') {
-      $where[] = "(dad.name ~ :dad OR dad.uniquename = :dad)";
-      $args[':dad'] = $filter_results['dad'];
-    }
+    // -- Parents.
+    $this->addParentageQuery($filter_results, $where, $args);
 
     // Finally, add it to the query.
     if (!empty($joins)) {

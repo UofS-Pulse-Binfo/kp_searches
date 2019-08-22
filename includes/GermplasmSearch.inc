@@ -129,6 +129,10 @@ class GermplasmSearch extends ChadoCustomSearch {
         'title' => 'Paternal Parent',
         'help' => 'The paternal parent of the germplasm you are interested in.'
       ],
+      'reciprocal_crosses' => [
+        'title' => 'Include reciprocal crosses',
+        'help' => 'Includes both A x B and B x A crosses when using the parentage filter.',
+      ],
       'name' => [
         'title' => 'Name',
         'help' => 'The name or accession of the germplasm (e.g. CDC Redberry; partial names are accepted).',
@@ -321,14 +325,17 @@ class GermplasmSearch extends ChadoCustomSearch {
     if (isset($form_state['values'])) {
       $mom_default = $form_state['values']['mom'];
       $dad_default = $form_state['values']['dad'];
+      $reciprocal = $form_state['values']['reciprocal_crosses'];
     }
     elseif (isset($q['mom'])) {
       $mom_default = $q['mom'];
       $dad_default = $q['dad'];
+      $reciprocal = $q['reciprocal_crosses'];
     }
     else {
       $mom_default = '';
       $dad_default = '';
+      $reciprocal = TRUE;
     }
 
     $form['parentage']['mom'] = $form['mom'];
@@ -349,6 +356,11 @@ class GermplasmSearch extends ChadoCustomSearch {
 
     $form['parentage']['dad']['#default_value'] = $dad_default;
     unset($form['dad']);
+
+    $form['parentage']['reciprocal_crosses'] = $form['reciprocal_crosses'];
+    $form['parentage']['reciprocal_crosses']['#type'] = 'checkbox';
+    $form['parentage']['reciprocal_crosses']['#default_value'] = $reciprocal;
+    unset($form['reciprocal_crosses']);
 
     // Add autocompletes if genus is available.
     if (isset($form['scientific_name']['genus']['#default_value'])
@@ -403,13 +415,13 @@ class GermplasmSearch extends ChadoCustomSearch {
 
     // -- Genus.
     if ($filter_results['genus'] != '') {
-      $where[] = "o.genus ~ :genus";
+      $where[] = "o.genus ~* :genus";
       $args[':genus'] = $filter_results['genus'];
     }
 
     // -- Species.
     if ($filter_results['species'] != '') {
-      $where[] = "o.species ~ :species";
+      $where[] = "o.species ~* :species";
       $args[':species'] = $filter_results['species'];
     }
 
@@ -421,33 +433,27 @@ class GermplasmSearch extends ChadoCustomSearch {
 
     // -- Source Institute.
     if ($filter_results['source_institute'] != '') {
-      $where[] = "source.value ~ :source_institute";
+      $where[] = "source.value ~* :source_institute";
       $args[':source_institute'] = $filter_results['source_institute'];
     }
 
     // -- Name.
     if ($filter_results['name'] != '') {
-      $where[] = "(s.name ~ :name OR s.uniquename = :name)";
+      $where[] = "(s.name ~* :name OR s.uniquename = :name)";
       $args[':name'] = $filter_results['name'];
     }
 
-    // -- Maternal Parent.
-    if ($filter_results['mom'] != '') {
+    // Add Parental Filter to query.
+    if ($filter_results['mom'] != '' OR $filter_results['dad'] != '') {
       $joins[] = "LEFT JOIN {stock_relationship} momr ON momr.object_id=s.stock_id
         AND momr.type_id=3632";
       $joins[] = "LEFT JOIN {stock} mom ON momr.subject_id=mom.stock_id";
-      $where[] = "(mom.name ~ :mom OR mom.uniquename = :mom)";
-      $args[':mom'] = $filter_results['mom'];
-    }
-
-    // -- Paternal Parent.
-    if ($filter_results['dad'] != '') {
       $joins[] = "LEFT JOIN {stock_relationship} dadr ON dadr.object_id=s.stock_id
         AND dadr.type_id=3633";
       $joins[] = "LEFT JOIN {stock} dad ON dadr.subject_id=dad.stock_id";
-      $where[] = "(dad.name ~ :dad OR dad.uniquename = :dad)";
-      $args[':dad'] = $filter_results['dad'];
     }
+    $this->addParentageQuery($filter_results, $where, $args);
+
 
     // -- ADD IN ACCESS CONTROL!
     // Only use access control for non administrators. This is put in place to
@@ -486,5 +492,50 @@ class GermplasmSearch extends ChadoCustomSearch {
     $query .= "\n" . ' LIMIT ' . $limit . ' OFFSET ' . $offset;
 
     // @debug dpm(strtr(str_replace(['{','}'], ['chado.', ''], $query), $args), 'query');
+  }
+
+  /**
+   * Adds the necessary components to the query to filter by parent.
+   * REQUIRES: pre-exising JOINS connecting a "mom" and "dad" table alias.
+   */
+  public function addParentageQuery($filter_results, &$where, &$args) {
+
+    if ($filter_results['reciprocal_crosses']) {
+      // -- Maternal & Paternal Parent.
+      if ($filter_results['mom'] != '' AND $filter_results['dad'] != '') {
+        $forward_clause = "(mom.name ~* :mom OR mom.uniquename = :mom) AND (dad.name ~* :dad OR dad.uniquename = :dad)";
+        $reciprocal_clause = "(mom.name ~* :dad OR mom.uniquename = :dad) AND (dad.name ~* :mom OR dad.uniquename = :mom)";
+        $where[] = "(($forward_clause) OR ($reciprocal_clause))";
+        $args[':mom'] = $filter_results['mom'];
+        $args[':dad'] = $filter_results['dad'];
+      }
+      // -- Just Maternal provided.
+      elseif ($filter_results['mom'] != '') {
+        $forward_clause = "mom.name ~* :mom OR mom.uniquename = :mom";
+        $reciprocal_clause = "dad.name ~* :mom OR dad.uniquename = :mom";
+        $where[] = "(($forward_clause) OR ($reciprocal_clause))";
+        $args[':mom'] = $filter_results['mom'];
+      }
+      // -- Just Paternal provided.
+      elseif ($filter_results['dad'] != '') {
+        $forward_clause = "dad.name ~* :dad OR dad.uniquename = :dad";
+        $reciprocal_clause = "mom.name ~* :dad OR mom.uniquename = :dad";
+        $where[] = "(($forward_clause) OR ($reciprocal_clause))";
+        $args[':dad'] = $filter_results['dad'];
+      }
+    }
+    else {
+      // -- Maternal Parent.
+      if ($filter_results['mom'] != '') {
+        $where[] = "(mom.name ~* :mom OR mom.uniquename = :mom)";
+        $args[':mom'] = $filter_results['mom'];
+      }
+
+      // -- Paternal Parent.
+      if ($filter_results['dad'] != '') {
+        $where[] = "(dad.name ~* :dad OR dad.uniquename = :dad)";
+        $args[':dad'] = $filter_results['dad'];
+      }
+    }
   }
 }

@@ -8,7 +8,7 @@
 }
 
 /* - Ensure all textfields match the select boxes in length. */
-#chado-custom-search-form .form-item input {
+#chado-custom-search-form .form-item input.form-text {
   width: 440px;
 }
 /* - Make the filter element help italicized. */
@@ -98,17 +98,19 @@
 }
 
 /*  - Parentage Filter   */
-#chado-custom-search-form .parentage-element .form-item label {
+#chado-custom-search-form .parentage-element .form-item.form-type-textfield label {
   display: none;
 }
 #chado-custom-search-form .parentage-element .form-item .description {
   display: none;
 }
 #chado-custom-search-form .parentage-element .form-item {
-  display: inline-block;
   margin-bottom: 2px;
 }
-#chado-custom-search-form .parentage-element input {
+#chado-custom-search-form .parentage-element .form-item.form-type-textfield {
+  display: inline-block;
+}
+#chado-custom-search-form .parentage-element input.form-text {
   width: 200px;
 }
 #chado-custom-search-form .parentage-element span.divider {
