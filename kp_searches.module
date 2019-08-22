@@ -10,6 +10,7 @@ require_once 'includes/GeneticMarkerSearch.inc';
 require_once 'includes/GermplasmSearch.inc';
 require_once 'includes/BreedingCrossSearch.inc';
 require_once 'includes/CultivarSearch.inc';
+require_once 'includes/RILSearch.inc';
 
  /**
   * Implement hook_chado_custom_search().
@@ -25,6 +26,7 @@ require_once 'includes/CultivarSearch.inc';
    $searches['GermplasmSearch'] = 'Germplasm Search';
    $searches['BreedingCrossSearch'] = 'Breeding Cross Search';
    $searches['CultivarSearch'] = 'Cultivar Search';
+   $searches['RILSearch'] = 'Recombinant Inbred Line (RIL) Search';
 
    return $searches;
  }
