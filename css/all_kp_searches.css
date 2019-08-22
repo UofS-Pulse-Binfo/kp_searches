@@ -4,12 +4,20 @@
 
 /* - Ensure all select boxes are the same length. */
 #chado-custom-search-form .form-item select {
-  width: 300px;
+  width: 450px;
 }
 
+/* - Ensure all textfields match the select boxes in length. */
+#chado-custom-search-form .form-item input.form-text {
+  width: 440px;
+}
 /* - Make the filter element help italicized. */
 #chado-custom-search-form .form-item .description {
   font-style: italic;
+}
+/* - Remove the bottom border of the header */
+#chado-custom-search-form thead tr th {
+  border-bottom: 1px solid #40576e;
 }
 
 /**
@@ -30,4 +38,87 @@
 }
 .seq-range-element input#edit-start-backbone {
   width: 200px;
+}
+
+/**
+ * Germplasm Searches.
+ */
+
+/*  - Crop            */
+#chado-custom-search-form .crop {
+  width: 80px;
+  display: inline-block;
+  margin-top: 5px;
+  margin-right: 15px;
+}
+#chado-custom-search-form .crop-title {
+  width: 80px;
+  text-align: center;
+}
+#chado-custom-search-form .crop-img a.active img {
+  margin: 0;
+  border: 1px solid green;
+}
+#chado-custom-search-form .crop-img a.inactive img {
+  opacity: 0.3;
+  filter: alpha(opacity=30); /* msie */
+  border: 1px solid #d0d0d0;
+}
+#chado-custom-search-form .crop a.inactive  {
+  color: #B0B0B0;
+}
+
+/*  - Scientific Name */
+#chado-custom-search-form .scientific-name-element .form-item label {
+  display: none;
+}
+#chado-custom-search-form .scientific-name-element .form-item .description {
+  display: none;
+}
+#chado-custom-search-form .scientific-name-element .form-item {
+  display: inline-block;
+  margin-bottom: 2px;
+}
+#chado-custom-search-form .scientific-name-element select {
+  width: 175px;
+}
+#chado-custom-search-form .scientific-name-element select#edit-species {
+  width: 275px;
+}
+
+/*  - Crossing Block   */
+#chado-custom-search-form .crossingblock-element .form-item label {
+  display: none;
+}
+#chado-custom-search-form .crossingblock-element .form-item .description {
+  display: none;
+}
+#chado-custom-search-form .crossingblock-element .form-item {
+  display: inline-block;
+  margin-bottom: 2px;
+}
+#chado-custom-search-form .crossingblock-element select {
+  width: 225px;
+}
+
+/*  - Parentage Filter   */
+#chado-custom-search-form .parentage-element .form-item.form-type-textfield label {
+  display: none;
+}
+#chado-custom-search-form .parentage-element .form-item .description {
+  display: none;
+}
+#chado-custom-search-form .parentage-element .form-item {
+  margin-bottom: 2px;
+}
+#chado-custom-search-form .parentage-element .form-item.form-type-textfield {
+  display: inline-block;
+}
+#chado-custom-search-form .parentage-element input.form-text {
+  width: 200px;
+}
+#chado-custom-search-form .parentage-element span.divider {
+  font-weight: bolder;
+  font-size: 1.1em;
+  padding: 0px 10px;
 }
