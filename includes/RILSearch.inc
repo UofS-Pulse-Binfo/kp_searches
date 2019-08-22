@@ -87,12 +87,18 @@ class RILSearch extends GermplasmSearch {
           'id_column' => 'mom_id'
         ],
       ],
+      'mom_species' => [
+        'title' => 'Species',
+      ],
       'dad' => [
         'title' => 'Paternal Parent',
         'entity_link' => [
           'chado_table' => 'stock',
           'id_column' => 'dad_id'
         ],
+      ],
+      'dad_species' => [
+        'title' => 'Species',
       ],
     ],
     // The filter criteria available to the user.
@@ -199,8 +205,10 @@ class RILSearch extends GermplasmSearch {
         s.stock_id,
         mom.name as mom,
         mom.stock_id as mom_id,
+        momo.species as mom_species,
         dad.name as dad,
-        dad.stock_id as dad_id
+        dad.stock_id as dad_id,
+        dado.species as dad_species
       FROM {stock} s
       LEFT JOIN {organism} o ON o.organism_id=s.organism_id
       LEFT JOIN {stock_relationship} origcross ON origcross.subject_id=s.stock_id
@@ -210,7 +218,9 @@ class RILSearch extends GermplasmSearch {
       LEFT JOIN {stock_relationship} dadr ON dadr.object_id=origcross.object_id
         AND dadr.type_id=3633
       LEFT JOIN {stock} mom ON momr.subject_id=mom.stock_id
-      LEFT JOIN {stock} dad ON dadr.subject_id=dad.stock_id";
+      LEFT JOIN {stock} dad ON dadr.subject_id=dad.stock_id
+      LEFT JOIN {organism} momo ON momo.organism_id=mom.organism_id
+      LEFT JOIN {organism} dado ON dado.organism_id=dad.organism_id";
 
     $where = [];
     $joins = [];
@@ -261,5 +271,46 @@ class RILSearch extends GermplasmSearch {
     $query .= "\n" . ' LIMIT ' . $limit . ' OFFSET ' . $offset;
 
     // @debug dpm(strtr(str_replace(['{','}'], ['chado.', ''], $query), $args), 'query');
+  }
+
+  /**
+   * Format the results within the $form array.
+   *
+   * The base class will format the results as a table.
+   *
+   * @param array $form
+   *   The current form array.
+   * @param array $results
+   *   The results to format. This will be an array of standard objects where
+   *   the keys map to the keys in $info['fields'].
+   */
+  public function formatResults(&$form, $results) {
+    parent::formatResults($form, $results);
+
+    if (isset($form['results'])) {
+      $header1 = [
+        'name' => '',
+        'mom' => [
+          'data' => 'Maternal',
+          'colspan' => 2,
+          'style' => 'text-align: center',
+        ],
+        'dad' => [
+          'data' => 'Paternal',
+          'colspan' => 2,
+          'style' => 'text-align: center',
+        ],
+      ];
+      $header2 = $form['results']['#header'];
+      foreach ($header2 as $key => $label) {
+        $header2[$key] = [
+          'data' => $label,
+          'header' => TRUE,
+        ];
+      }
+
+      $form['results']['#header'] = $header1;
+      array_unshift($form['results']['#rows'], $header2);
+    }
   }
 }
