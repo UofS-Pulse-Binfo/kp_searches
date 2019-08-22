@@ -91,6 +91,9 @@ class GermplasmSearch extends ChadoCustomSearch {
       'type' => [
         'title' => 'Category',
       ],
+      'origin' => [
+        'title' => 'Origin',
+      ],
       'source_institute' => [
         'title' => 'Source Institute',
       ],
@@ -116,6 +119,10 @@ class GermplasmSearch extends ChadoCustomSearch {
       'type' => [
         'title' => 'Category',
         'help' => 'The category this germplasm belongs to (e.g. Breeding Cross).',
+      ],
+      'origin' => [
+        'title' => 'Germplasm Origin',
+        'help' => 'The country the seed originated from.'
       ],
       'source_institute' => [
         'title' => 'Source Institute',
@@ -403,10 +410,12 @@ class GermplasmSearch extends ChadoCustomSearch {
         s.name, s.uniquename,
         s.stock_id,
         tb.label as type,
+        origin.value as origin,
         source.value as source_institute
       FROM {stock} s
       LEFT JOIN {organism} o ON o.organism_id=s.organism_id
       LEFT JOIN {stockprop} source ON source.stock_id=s.stock_id AND source.type_id=3711
+      LEFT JOIN {stockprop} origin ON origin.stock_id=s.stock_id AND origin.type_id=3976
       LEFT JOIN chado_bundle cb ON cb.type_id=s.type_id
       LEFT JOIN tripal_bundle tb ON tb.id=cb.bundle_id ";
 
@@ -435,6 +444,12 @@ class GermplasmSearch extends ChadoCustomSearch {
     if ($filter_results['source_institute'] != '') {
       $where[] = "source.value ~* :source_institute";
       $args[':source_institute'] = $filter_results['source_institute'];
+    }
+
+    // -- Origin.
+    if ($filter_results['origin'] != '') {
+      $where[] = "origin.value ~* :origin";
+      $args[':origin'] = $filter_results['origin'];
     }
 
     // -- Name.
