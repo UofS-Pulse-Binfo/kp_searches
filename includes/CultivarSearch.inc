@@ -97,6 +97,12 @@ class CultivarSearch extends GermplasmSearch {
       'source_institute' => [
         'title' => 'Source Institute',
       ],
+      'market_class' => [
+        'title' => 'Market Class',
+      ],
+      'yr_released' => [
+        'title' => 'Year Released',
+      ],
     ],
     // The filter criteria available to the user.
     // This is used to generate a search form which can be altered.
@@ -112,6 +118,10 @@ class CultivarSearch extends GermplasmSearch {
       'source_institute' => [
         'title' => 'Source Institute',
         'help' => 'The institute the germplasm was developed or collected by.'
+      ],
+      'market_class' => [
+        'title' => 'Market Class',
+        'help' => 'Groupings from each crop based on phenotypic traits desirable by economic groups (e.g. Large Red).'
       ],
       'mom' => [
         'title' => 'Maternal Parent',
@@ -197,6 +207,8 @@ class CultivarSearch extends GermplasmSearch {
         s.uniquename,
         s.stock_id,
         source.value as source_institute,
+        released.value as yr_released,
+        market.value as market_class,
         mom.name as mom,
         mom.stock_id as mom_id,
         dad.name as dad,
@@ -204,6 +216,9 @@ class CultivarSearch extends GermplasmSearch {
       FROM {stock} s
       LEFT JOIN {organism} o ON o.organism_id=s.organism_id
       LEFT JOIN {stockprop} source ON source.stock_id=s.stock_id AND source.type_id=3711
+      LEFT JOIN {stockprop} market ON market.stock_id=s.stock_id
+        AND (market.type_id=4086 OR market.type_id=3682)
+      LEFT JOIN {stockprop} released ON released.stock_id=s.stock_id AND released.type_id=3688
       LEFT JOIN {stock_relationship} regcultivar ON regcultivar.subject_id=s.stock_id
         AND regcultivar.type_id = 3679
       LEFT JOIN {stock_relationship} origcross ON origcross.subject_id=regcultivar.object_id
@@ -240,6 +255,12 @@ class CultivarSearch extends GermplasmSearch {
     if ($filter_results['source_institute'] != '') {
       $where[] = "source.value ~* :source_institute";
       $args[':source_institute'] = $filter_results['source_institute'];
+    }
+
+    // -- Market Class
+    if ($filter_results['market_class'] != '') {
+      $where[] = "market.value ~* :market_class";
+      $args[':market_class'] = $filter_results['market_class'];
     }
 
     // -- Parents.
