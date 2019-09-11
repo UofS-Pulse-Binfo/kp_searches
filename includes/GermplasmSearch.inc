@@ -228,7 +228,7 @@ class GermplasmSearch extends ChadoCustomSearch {
       $search_url = $this::$menu['path'];
       $search_q = $q;
       $search_q['genus'] = $crop['genus'];
-      $search_q['species'] = $crop['crop-species'];
+      //$search_q['species'] = $crop['crop-species'];
       $crop_link = l($crop['title'], $search_url, [
         'query' => $search_q,
         'attributes' => ['class' => [$class]]
