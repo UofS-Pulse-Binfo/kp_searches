@@ -225,13 +225,14 @@ class RILSearch extends GermplasmSearch {
     $where = [];
     $joins = [];
 
-    // -- Restrict to RILs.
-    $where[] = 's.type_id=:type_id';
-    $args[':type_id'] = 3967;
-
     // -- Remove RILL individuals.
-    if(!$filter_results['show_individiuals']) {
-      $where[] = "s.name~*'^[a-z]+-[0-9]+$'";
+    if($filter_results['show_individiuals']) {
+      $where[] = 's.type_id IN (:type_id)';
+      $args[':type_id'] = [3967, 6559];
+    }
+    else {
+      $where[] = 's.type_id=:type_id';
+      $args[':type_id'] = 3967;
     }
 
     // -- Genus.
