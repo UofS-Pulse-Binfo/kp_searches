@@ -4,7 +4,7 @@
  * Provides a search for SO:genetic_marker chado feature-based Tripal Content.
  *
  */
-class GeneticMarkerSearch extends ChadoCustomSearch {
+class GeneticMarkerSearch extends KPSEARCH {
 
   /**
    * The human readable title of this search. This will be used in listings
@@ -96,9 +96,13 @@ class GeneticMarkerSearch extends ChadoCustomSearch {
     // The filter criteria available to the user.
     // This is used to generate a search form which can be altered.
     'filters' => [
+      'genus' => [
+        'title' => 'Genus',
+        'help' => 'The legume species the genetic marker was designed for (e.g. Lens culinaris).',
+      ],
       'species' => [
-        'title' => 'Source Species',
-        'help' => 'The legume species the marker was developed for (e.g. Lens culinaris).',
+        'title' => 'Species',
+        'help' => '',
       ],
       'type' => [
         'title' => 'Marker Type',
@@ -146,13 +150,11 @@ class GeneticMarkerSearch extends ChadoCustomSearch {
   public function form($form, $form_state) {
     $form = parent::form($form, $form_state);
 
-    // Make the species a drop-down.
-    $options = chado_query("SELECT genus||' '||species
-      FROM {organism}
-      ORDER BY genus ASC, species ASC")->fetchAllKeyed(0,0);
-    $form['species']['#type'] = 'select';
-    $form['species']['#options'] = $options;
-    $form['species']['#empty_option'] = ' - Select -';
+    // Add a crop selector.
+    $this->addCropFormElement($form, $form_state);
+
+    // Add a Scientific name selector.
+    $this->addSpeciesFormElement($form, $form_state);
 
     // Make the marker type a drop-down.
     $options = unserialize(variable_get('kp_searches_marker_types', 'a:0{}'));
@@ -248,9 +250,15 @@ class GeneticMarkerSearch extends ChadoCustomSearch {
     $where = ["marker.type_id IN (SELECT cvterm_id FROM {cvterm} WHERE name='genetic_marker')"];
     $joins = [];
 
+    // -- Genus.
+    if ($filter_results['genus'] != '') {
+      $where[] = "o.genus ~* :genus";
+      $args[':genus'] = $filter_results['genus'];
+    }
+
     // -- Species.
     if ($filter_results['species'] != '') {
-      $where[] = "o.genus||' '||o.species ~ :species";
+      $where[] = "o.species ~* :species";
       $args[':species'] = $filter_results['species'];
     }
 
