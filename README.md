@@ -1,3 +1,7 @@
+![Tripal Dependency](https://img.shields.io/badge/tripal-%3E=3.0-brightgreen)
+![Module is Generic](https://img.shields.io/badge/generic-KnowPulse--specific-red)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/UofS-Pulse-Binfo/germ_summary?include_prereleases)
+
 # KnowPulse Searches
 
 This module provides custom search functionality for KnowPulse through use of the [Chado Custom Search API](https://github.com/uofs-pulse-binfo/chado_custom_search).
