@@ -182,7 +182,7 @@ class BreedingCrossSearch extends GermplasmSearch {
       $cbseason_default = $q['crossingblock_season'];
     }
     else {
-      $cbyear_default = date('Y');
+      $cbyear_default = NULL;
       $cbseason_default = NULL;
     }
 
@@ -302,7 +302,7 @@ class BreedingCrossSearch extends GermplasmSearch {
     }
 
     // Sort even though it is SLOW b/c ppl expect it.
-    $query .= "\n" . ' ORDER BY s.name ASC';
+    $query .= "\n" . ' ORDER BY cbyear.value DESC, cbseason.value ASC';
 
     // Handle paging.
     $limit = $this::$num_items_per_page + 1;
