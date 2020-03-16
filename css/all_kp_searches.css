@@ -23,20 +23,20 @@
 /**
  * Genetic Marker Search.
  */
-.seq-range-element .form-type-textfield label {
+#chado-custom-search-form .seq-range-element .form-type-textfield label {
   display: none;
 }
-.seq-range-element .form-type-textfield .description {
+#chado-custom-search-form .seq-range-element .form-type-textfield .description {
   display: none;
 }
-.seq-range-element .form-item {
+#chado-custom-search-form .seq-range-element .form-item {
   display: inline-block;
   margin-bottom: 2px;
 }
-.seq-range-element input {
+#chado-custom-search-form .seq-range-element input.form-text {
   width: 100px;
 }
-.seq-range-element input#edit-start-backbone {
+#chado-custom-search-form .seq-range-element input#edit-start-backbone {
   width: 200px;
 }
 

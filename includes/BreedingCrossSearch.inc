@@ -302,7 +302,7 @@ class BreedingCrossSearch extends GermplasmSearch {
     }
 
     // Sort even though it is SLOW b/c ppl expect it.
-    $query .= "\n" . ' ORDER BY cbyear.value DESC, cbseason.value ASC';
+    $query .= "\n" . ' ORDER BY cbyear.value DESC, cbseason.value ASC, s.name ASC';
 
     // Handle paging.
     $limit = $this::$num_items_per_page + 1;
