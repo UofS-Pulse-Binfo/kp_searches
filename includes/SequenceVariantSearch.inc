@@ -85,6 +85,9 @@ class SequenceVariantSearch extends KPSEARCH {
       'type' => [
         'title' => 'Variant Type',
       ],
+      'original_loc' => [
+        'title' => 'Original Location',
+      ],
       'species' => [
         'title' => 'Source Species',
         'entity_link' => [
@@ -240,9 +243,15 @@ class SequenceVariantSearch extends KPSEARCH {
     // @debug dpm($filter_results, '$filter_results');
 
     $query = "
-      SELECT variant.feature_id, variant.name as name, type.value as type, o.organism_id, o.genus||' '||o.species as species
+      SELECT
+        variant.feature_id, variant.name as name,
+        type.value as type,
+        olocparent.name||':'||original_loc.fmin||'..'||original_loc.fmax as original_loc,
+        o.organism_id, o.genus||' '||o.species as species
       FROM {feature} variant
       LEFT JOIN {organism} o ON o.organism_id=variant.organism_id
+      LEFT JOIN {featureloc} original_loc ON original_loc.feature_id = variant.feature_id AND original_loc.locgroup=0
+      LEFT JOIN {feature} olocparent ON olocparent.feature_id=original_loc.srcfeature_id
       LEFT JOIN {featureprop} type ON type.feature_id = variant.feature_id
         AND type.type_id IN
           (SELECT cvterm_id FROM chado.cvterm WHERE name='additionalType') ";
