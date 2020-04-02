@@ -21,6 +21,54 @@
 }
 
 /**
+ * Item list searches.
+ */
+#chado-custom-search-form ul {
+  padding-left: 0px;
+}
+#chado-custom-search-form ul li {
+  border-top: 1px solid #d0d0d0;
+  list-style: none;
+}
+#chado-custom-search-form ul li .result-row {
+  width: 100%;
+  height: 100px;
+  display: inline-flex;
+  justify-content: space-between;
+  margin: 10px 0px;
+}
+#chado-custom-search-form ul li .result-row .result-left {
+  width: 85%;
+}
+#chado-custom-search-form ul li .result-row .result-right {
+  width: 14%;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  font-weight: bold;
+  color: #666666;
+}
+#chado-custom-search-form ul li .result-title {
+  font-size: 1.1em;
+  font-weight: bold;
+  word-wrap: break-word;
+}
+#chado-custom-search-form ul li .result-genus {
+  background-repeat: no-repeat;
+  padding-left: 25px;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABNElEQVQ4jeXTvyvFURjH8ZeULiKLwY9BTJYbo1L3jxApSSExGZSSQZKFkmKVRfmx2JTBcEshyeQfkE0USga5hu/51tc3bn4NyqfOcM7ned7nOec5hz+kLmxhB3PIoaxYQgYlH3hZPKOQGvliwHmcYgN9qd1734EVQuyHGkkFb6M0ePV4TPkPaC4GbMJTIuEeVcEbxCGug/eEgWKwWOsJ4FJYm8UeqsOm3Wj7DAwq0YNpjGIYFwH2Y+VF95T9DVgGN1hNrTeg5jvASbyIuhtrDHe4xAwqYqNFdDebOMExxhOJ1aG6XdRhAiu49fbZnKEVFr3/SDsDsC/Mj7CGfjSKOp2MP0dHXEVO1L1kwFTw4vkCyhOVt+MA+6KfUyql2nDsKywHyFAC+G3Fv6EiVfGv6R8Cv6RXU4NiJ/enec4AAAAASUVORK5CYII=');
+}
+#chado-custom-search-form ul li .result-category {
+  background-repeat: no-repeat;
+  padding-left: 25px;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABGklEQVQ4jaXUSysFUQDA8d/NRpSFDXk/1sqCK8XORjZk4/VNKCVLirJQivIdLK0QK69uJBvfQ8lizqkxzdzH+NdZzGnmN+fMTEPrTWGxxHWF3WP2v8g8PlDDN97DOEalDPaMwXB8gb0AnYTRNJrFoANf6E6hR2WxTlzjBzthriLZfssYrOABt/hMzdcaYS85GIzgDWe4yoAz2C3ChurccAhLaM+AC5LnWYgNYLIOHBsNq/4D5q2sH09hK/Ww13DOAbZhLoNVcI4uDAe0moONpbB9XKINVnEXgNgablLoIyaawWJbkk+hCO1DbwarFmGxzRSQRk9zVtYQi23koKWxeuh4WSwPjdh0WSy2Lnn7EevBYVkstiz55TfdL0JZSInMoeXyAAAAAElFTkSuQmCC');
+}
+#chado-custom-search-form ul li .result-year {
+  background-repeat: no-repeat;
+  padding-left: 25px;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABXUlEQVQ4jZ3UPU4cQRAF4G+RBpnUR0Ag584QIrUEJGyOWeAKDkngAJDDIXwBgwgRPzEhPxJzD4Kq1o6HndmBJ7XU01X1pqvqVTMbFca4wC1ec93m2Th9BmEbD6jnrPv07cQIJ42Af/iN5bxNlfs9XDb8TjL2AwrZE3a7nBo/n+A5Y45npVnI1vrSaGE9Y2pslcPKtGa7HYE1/nTYJmm/Sy5j05p1pdlHOMJV+uwQMqhFA7rQRwj76XNOaKsWHfwq4Ur63BCCrfULdR7hYvq8fIbwGj+HEA5J+Zfo4htO8b1lX9VIuTRlr4cQlnAkMnr0fxMPNJpSZHOpfzoKfuAvzvJ7QUs2lRj0Woh0CEb4lvtDLWEzHb1nMU5DsSEaUWOzbWw+DhP96S/kzQrZ8SynURrKs3QlJmBFyGJRdPPAtGaFrLf2W6Ie8x7Yu1lpdqESHTsX2nrJdZNnOzoG4R2XfnQaJSNtsQAAAABJRU5ErkJggg==');
+}
+
+/**
  * Genetic Marker Search.
  */
 #chado-custom-search-form .seq-range-element .form-type-textfield label {

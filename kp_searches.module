@@ -17,6 +17,8 @@ require_once 'includes/RILSearch.inc';
 
 require_once 'includes/GeneticMapSearch.inc';
 
+require_once 'includes/ExperimentSearch.inc';
+
  /**
   * Implement hook_chado_custom_search().
   *
@@ -36,6 +38,8 @@ require_once 'includes/GeneticMapSearch.inc';
    $searches['RILSearch'] = 'Recombinant Inbred Line (RIL) Search';
 
    $searches['GeneticMapSearch'] = 'Genetic Map Search';
+
+   $searches['ExperimentSearch'] = 'Experiment Search';
 
    return $searches;
  }
