@@ -39,6 +39,7 @@
 }
 #chado-custom-search-form ul li .result-row .result-left {
   width: 85%;
+  overflow-y: hidden;
 }
 #chado-custom-search-form ul li .result-row .result-right {
   width: 14%;

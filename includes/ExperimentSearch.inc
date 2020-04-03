@@ -104,14 +104,6 @@ class ExperimentSearch extends KPSEARCH {
         'title' => 'Species',
         'help' => '',
       ],
-      'year' => [
-        'title' => 'Year',
-        'help' => 'The years the project is ongoing for.',
-      ],
-      'category' => [
-        'title' => 'Category',
-        'help' => 'The category of the experiment.',
-      ],
       'name' => [
         'title' => 'Name',
         'help' => 'The name of the experiment you are interested in (partial names are accepted).',
