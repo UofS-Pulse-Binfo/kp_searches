@@ -251,10 +251,10 @@ class ExperimentSearch extends KPSEARCH {
 
       // Substring the description.
       $description = strip_tags($r->description);
-      if (preg_match('/^.{1,500}\b/s', $description, $match)) {
+      if (preg_match('/^.{1,300}\b/s', $description, $match)) {
         $description = trim($match[0]);
       }
-      if ($id) {
+      if ($id && (strlen($description) > 0)){
         $description .= ' ' . l('[Read more]', 'bio_data/'.$id);
       }
 
@@ -265,9 +265,9 @@ class ExperimentSearch extends KPSEARCH {
             <div class="result-description">'.$description.'</div>
           </div>
           <div class="result-right">
-            <div class="result-year">'.$r->year.'</div>
-            <div class="result-genus">'.$r->genus.'</div>
-            <div class="result-category">'.$r->category.'</div>
+            <div class="result-year" title="Year(s) of Funding">'.$r->year.'</div>
+            <div class="result-genus" title="Genus for germplasm">'.$r->genus.'</div>
+            <div class="result-category" title="Research Category">'.$r->category.'</div>
           </div>
         </div>';
       $list[] = $markup;
