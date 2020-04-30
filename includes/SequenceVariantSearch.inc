@@ -170,7 +170,7 @@ class SequenceVariantSearch extends KPSEARCH {
     $form['project']['#autocomplete_path'] = 'tripal_ajax/nd_genotypes/project/name';
 
     // Add a sequence range element.
-    $description = 'The range of the genome you would like to display variants from.';
+    $description = 'The range of the genome you would like to display variants from (e.g. LcChr2:1000-50000).';
     $form['seq_range'] = array(
       '#type' => 'markup',
       '#prefix' => '<div class="seq-range-element form-item"><label>Genome Range</label>',
