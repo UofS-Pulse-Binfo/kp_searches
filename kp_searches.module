@@ -8,6 +8,7 @@
 require_once 'includes/KPSEARCH.inc';
 
 require_once 'includes/GeneticMarkerSearch.inc';
+require_once 'includes/SequenceVariantSearch.inc';
 
 require_once 'includes/GermplasmSearch.inc';
 require_once 'includes/BreedingCrossSearch.inc';
@@ -15,6 +16,8 @@ require_once 'includes/CultivarSearch.inc';
 require_once 'includes/RILSearch.inc';
 
 require_once 'includes/GeneticMapSearch.inc';
+
+require_once 'includes/ExperimentSearch.inc';
 
  /**
   * Implement hook_chado_custom_search().
@@ -27,6 +30,7 @@ require_once 'includes/GeneticMapSearch.inc';
 
    // EXAMPLE: $searches['BreedingCrossSearch'] = 'Breeding Cross Search';
    $searches['GeneticMarkerSearch'] = 'Genetic Marker Search';
+   $searches['SequenceVariantSearch'] = 'Sequence Variant Search';
 
    $searches['GermplasmSearch'] = 'Germplasm Search';
    $searches['BreedingCrossSearch'] = 'Breeding Cross Search';
@@ -34,6 +38,8 @@ require_once 'includes/GeneticMapSearch.inc';
    $searches['RILSearch'] = 'Recombinant Inbred Line (RIL) Search';
 
    $searches['GeneticMapSearch'] = 'Genetic Map Search';
+
+   $searches['ExperimentSearch'] = 'Experiment Search';
 
    return $searches;
  }
@@ -138,17 +144,29 @@ function kp_searches_cache_options() {
   $partitions = chado_query($query)->fetchCol();
   // -- Retieve marker type options for all partitions.
   $marker_types = [];
+  $variant_types = [];
   foreach ($partitions as $partition_name) {
-    $curr_partition_types = variable_get(
+    // Markers:
+    $curr_partition_marker_types = variable_get(
       'nd_genotypes_'.$partition_name.'_marker_types',
       'a:0{}'
     );
-    if (!empty($curr_partition_types)) {
-      $marker_types = array_merge($marker_types, unserialize($curr_partition_types));
+    if (!empty($curr_partition_marker_types)) {
+      $marker_types = array_merge($marker_types, unserialize($curr_partition_marker_types));
+    }
+
+    // Variants:
+    $curr_partition_variant_types = variable_get(
+      'nd_genotypes_'.$partition_name.'_variant_types',
+      'a:0{}'
+    );
+    if (!empty($curr_partition_variant_types)) {
+      $variant_types = array_merge($variant_types, unserialize($curr_partition_variant_types));
     }
   }
   // -- Finally, Save the options!
   variable_set('kp_searches_marker_types', serialize($marker_types));
+  variable_set('kp_searches_variant_types', serialize($variant_types));
 
 }
 

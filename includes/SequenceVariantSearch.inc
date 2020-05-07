@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Provides a search for SO:genetic_marker chado feature-based Tripal Content.
+ * Provides a search for SO:sequence_variant chado feature-based Tripal Content.
  *
  */
-class GeneticMarkerSearch extends KPSEARCH {
+class SequenceVariantSearch extends KPSEARCH {
 
   /**
    * The human readable title of this search. This will be used in listings
    * and shown on the search page as the title.
    */
-  public static $title = 'Genetic Marker Search';
+  public static $title = 'Sequence Variant Search';
 
   /**
    * The machine name of the module providing this search.
@@ -54,7 +54,7 @@ class GeneticMarkerSearch extends KPSEARCH {
    * path is required.
    */
   public static $menu = [
-    'path' => 'search/markers',
+    'path' => 'search/variants',
     // @todo support menu items.
   ];
 
@@ -83,7 +83,7 @@ class GeneticMarkerSearch extends KPSEARCH {
         ],
       ],
       'type' => [
-        'title' => 'Marker Type',
+        'title' => 'Variant Type',
       ],
       'original_loc' => [
         'title' => 'Original Location',
@@ -101,15 +101,15 @@ class GeneticMarkerSearch extends KPSEARCH {
     'filters' => [
       'genus' => [
         'title' => 'Genus',
-        'help' => 'The legume species the genetic marker was designed for (e.g. Lens culinaris).',
+        'help' => 'The legume species the Sequence Variant was designed for (e.g. Lens culinaris).',
       ],
       'species' => [
         'title' => 'Species',
         'help' => '',
       ],
       'type' => [
-        'title' => 'Marker Type',
-        'help' => 'The type of marker you are interested in (e.g. Illumina Golden Gate).',
+        'title' => 'Variant Type',
+        'help' => 'The type of variant you are interested in (e.g. SNP).',
         //'default' => 'Exome Capture',
       ],
       'project' => [
@@ -118,7 +118,7 @@ class GeneticMarkerSearch extends KPSEARCH {
       ],
       'start-backbone' => [
         'title' => 'Start: Backbone',
-        'help' => 'The name of the sequence the markers are located on.'
+        'help' => 'The name of the sequence the variants are located on.'
       ],
       'start-pos' => [
         'title' => 'Start: Position',
@@ -130,7 +130,7 @@ class GeneticMarkerSearch extends KPSEARCH {
       ],
       'name' => [
         'title' => 'Name',
-        'help' => 'The name or accession of the marker (e.g. LcC00002p390; partial names are accepted).',
+        'help' => 'The name or accession of the variant (e.g. LcC00002p390; partial names are accepted).',
       ],
     ],
   ];
@@ -159,8 +159,8 @@ class GeneticMarkerSearch extends KPSEARCH {
     // Add a Scientific name selector.
     $this->addSpeciesFormElement($form, $form_state);
 
-    // Make the marker type a drop-down.
-    $options = unserialize(variable_get('kp_searches_marker_types', 'a:0{}'));
+    // Make the variant type a drop-down.
+    $options = unserialize(variable_get('kp_searches_variant_types', 'a:0{}'));
     $form['type']['#type'] = 'select';
     $form['type']['#options'] = $options;
     $form['type']['#empty_option'] = ' - Select -';
@@ -170,7 +170,7 @@ class GeneticMarkerSearch extends KPSEARCH {
     $form['project']['#autocomplete_path'] = 'tripal_ajax/nd_genotypes/project/name';
 
     // Add a sequence range element.
-    $description = 'The range of the genome you would like to display variants from.';
+    $description = 'The range of the genome you would like to display variants from (e.g. LcChr2:1000-50000).';
     $form['seq_range'] = array(
       '#type' => 'markup',
       '#prefix' => '<div class="seq-range-element form-item"><label>Genome Range</label>',
@@ -227,7 +227,7 @@ class GeneticMarkerSearch extends KPSEARCH {
   }
 
   /**
-   * Determine the query for the genetic marker search.
+   * Determine the query for the Sequence Variant search.
    *
    * @param string $query
    *   The full SQL query to execute. This will be executed using chado_query()
@@ -244,19 +244,19 @@ class GeneticMarkerSearch extends KPSEARCH {
 
     $query = "
       SELECT
-        marker.feature_id, marker.name as name,
+        variant.feature_id, variant.name as name,
         type.value as type,
         olocparent.name||':'||original_loc.fmin||'..'||original_loc.fmax as original_loc,
         o.organism_id, o.genus||' '||o.species as species
-      FROM {feature} marker
-      LEFT JOIN {organism} o ON o.organism_id=marker.organism_id
-      LEFT JOIN {featureloc} original_loc ON original_loc.feature_id = marker.feature_id AND original_loc.locgroup=0
+      FROM {feature} variant
+      LEFT JOIN {organism} o ON o.organism_id=variant.organism_id
+      LEFT JOIN {featureloc} original_loc ON original_loc.feature_id = variant.feature_id AND original_loc.locgroup=0
       LEFT JOIN {feature} olocparent ON olocparent.feature_id=original_loc.srcfeature_id
-      LEFT JOIN {featureprop} type ON type.feature_id = marker.feature_id
+      LEFT JOIN {featureprop} type ON type.feature_id = variant.feature_id
         AND type.type_id IN
           (SELECT cvterm_id FROM chado.cvterm WHERE name='additionalType') ";
 
-    $where = ["marker.type_id IN (SELECT cvterm_id FROM {cvterm} WHERE name='genetic_marker')"];
+    $where = ["variant.type_id IN (SELECT cvterm_id FROM {cvterm} WHERE name='sequence_variant')"];
     $joins = [];
 
     // -- Genus.
@@ -281,13 +281,13 @@ class GeneticMarkerSearch extends KPSEARCH {
     if ($filter_results['project'] != '') {
       $where[] = "project.name ~ :project";
       $args[':project'] = $filter_results['project'];
-      $joins[] = 'LEFT JOIN {project_feature} pf ON pf.feature_id=marker.feature_id';
+      $joins[] = 'LEFT JOIN {project_feature} pf ON pf.feature_id=variant.feature_id';
       $joins[] = 'LEFT JOIN {project} project ON project.project_id=pf.project_id';
     }
 
     // -- Name.
     if ($filter_results['name'] != '') {
-      $where[] = "(marker.name ~ :name OR marker.uniquename = :name)";
+      $where[] = "(variant.name ~ :name OR variant.uniquename = :name)";
       $args[':name'] = $filter_results['name'];
     }
 
@@ -296,7 +296,7 @@ class GeneticMarkerSearch extends KPSEARCH {
       AND $filter_results['end-pos'] != '') {
 
         $joins[] = 'LEFT JOIN {featureloc} loc
-          ON loc.feature_id=marker.feature_id';
+          ON loc.feature_id=variant.feature_id';
         $where[] = 'loc.fmin BETWEEN :start AND :end';
         $args[':start'] = $filter_results['start-pos'];
         $args[':end'] = $filter_results['end-pos'];
@@ -315,7 +315,7 @@ class GeneticMarkerSearch extends KPSEARCH {
     }
 
     // Sort even though it is SLOW b/c ppl expect it.
-    $query .= "\n" . ' ORDER BY marker.name ASC';
+    $query .= "\n" . ' ORDER BY variant.name ASC';
 
     // Handle paging.
     $limit = $this::$num_items_per_page + 1;
