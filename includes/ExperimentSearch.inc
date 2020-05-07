@@ -264,10 +264,17 @@ class ExperimentSearch extends KPSEARCH {
             <div class="result-title">'.$title.'</div>
             <div class="result-description">'.$description.'</div>
           </div>
-          <div class="result-right">
-            <div class="result-year" title="Year(s) of Funding">'.$r->year.'</div>
-            <div class="result-genus" title="Genus for germplasm">'.$r->genus.'</div>
-            <div class="result-category" title="Research Category">'.$r->category.'</div>
+	  <div class="result-right">';
+      if ($r->year) {
+        $markup .= '<div class="result-year" title="Year(s) of Funding">'.$r->year.'</div>';
+      }
+      if ($r->genus) {
+        $markup .= '<div class="result-genus" title="Genus for germplasm">'.$r->genus.'</div>';
+      }
+      if ($r->category) {
+        $markup .= '<div class="result-category" title="Research Category">'.$r->category.'</div>';
+      }
+      $markup .= '
           </div>
         </div>';
       $list[] = $markup;
