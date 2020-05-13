@@ -215,7 +215,7 @@ class ExperimentSearch extends KPSEARCH {
     }
 
     // Sort even though it is SLOW b/c ppl expect it.
-    $query .= "\n" . ' ORDER BY exp.name ASC';
+    $query .= "\n" . ' ORDER BY yr.value DESC, exp.name ASC';
 
     // Handle paging.
     $limit = $this::$num_items_per_page + 1;
