@@ -268,7 +268,7 @@ class GenomeAssemblySearch extends KPSEARCH {
           </div>
 	  <div class="result-right">';
       if ($r->date_released) {
-        $markup .= '<div class="result-year" title="Year Released">'.format_date(strtotime($r->date_released), 'short').'</div>';
+        $markup .= '<div class="result-year" title="Year Released">'.date('Y M j', strtotime($r->date_released)).'</div>';
       }
       if ($r->sourcename) {
         $markup .= '<div class="result-genus" title="Source Germplasm">'.$r->sourcename.'</div>';
