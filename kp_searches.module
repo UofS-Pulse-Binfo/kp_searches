@@ -18,6 +18,7 @@ require_once 'includes/RILSearch.inc';
 require_once 'includes/GeneticMapSearch.inc';
 
 require_once 'includes/ExperimentSearch.inc';
+require_once 'includes/GenomeAssemblySearch.inc';
 
  /**
   * Implement hook_chado_custom_search().
@@ -40,6 +41,7 @@ require_once 'includes/ExperimentSearch.inc';
    $searches['GeneticMapSearch'] = 'Genetic Map Search';
 
    $searches['ExperimentSearch'] = 'Experiment Search';
+   $searches['GenomeAssemblySearch'] = 'Genome Assembly Search';
 
    return $searches;
  }
