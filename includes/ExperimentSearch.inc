@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Provides a search for chado featuremap-based Tripal Content.
+ * Provides a search for chado project-based Tripal Content associated with the "Study" Content Type.
  *
  */
-class ExperimentSearch extends KPSEARCH {
+class ResearchStudySearch extends KPSEARCH {
 
   /**
    * The human readable title of this search. This will be used in listings
    * and shown on the search page as the title.
    */
-  public static $title = 'Experiment Search';
+  public static $title = 'Research Study Search';
 
   /**
    * The machine name of the module providing this search.
@@ -54,7 +54,7 @@ class ExperimentSearch extends KPSEARCH {
    * path is required.
    */
   public static $menu = [
-    'path' => 'research/projects',
+    'path' => 'research/studies',
     // @todo support menu items.
   ];
 
@@ -97,7 +97,7 @@ class ExperimentSearch extends KPSEARCH {
     'filters' => [
       'genus' => [
         'title' => 'Genus',
-        'help' => 'The legume species the experiment is focused on (e.g. Lens culinaris).',
+        'help' => 'The legume species the research study is focused on (e.g. Lens culinaris).',
         'default' => 'Lens',
       ],
       'species' => [
@@ -106,7 +106,7 @@ class ExperimentSearch extends KPSEARCH {
       ],
       'name' => [
         'title' => 'Name',
-        'help' => 'The name of the experiment you are interested in (partial names are accepted).',
+        'help' => 'The name of the research study you are interested in (partial names are accepted).',
       ],
     ],
   ];
@@ -187,7 +187,7 @@ class ExperimentSearch extends KPSEARCH {
     $joins = [];
 
     $where[] = "re.value = :content_type";
-    $args[':content_type'] = 'Research Experiment';
+    $args[':content_type'] = 'SIO:Study';
     // -- Genus.
     if ($filter_results['genus'] != '') {
       $where[] = "genus.value ~* :genus";
