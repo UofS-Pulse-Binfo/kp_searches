@@ -94,6 +94,9 @@ class GermplasmSearch extends KPSEARCH {
       'origin' => [
         'title' => 'Origin',
       ],
+      'collection' => [
+        'title' => 'Collection'
+      ],
       'source_institute' => [
         'title' => 'Source Institute',
       ],
@@ -123,6 +126,10 @@ class GermplasmSearch extends KPSEARCH {
       'origin' => [
         'title' => 'Germplasm Origin',
         'help' => 'The country the seed originated from.'
+      ],
+      'collection' => [
+        'title' => 'Collection/Population',
+        'help' => 'The collection or population the germplasm is part of.'
       ],
       'source_institute' => [
         'title' => 'Source Institute',
@@ -170,6 +177,9 @@ class GermplasmSearch extends KPSEARCH {
 
     // Add a Scientific name selector.
     $this->addSpeciesFormElement($form, $form_state);
+
+    // Add collection/population selector.
+    $this->addCollectionFormElement($form, $form_state);
 
     // Change category to a drop-down.
     $options = unserialize(variable_get('kp_searches_germplasm_type_options', 'a:0:{}'));
