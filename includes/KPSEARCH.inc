@@ -166,6 +166,8 @@ class KPSEARCH extends ChadoCustomSearch {
     $collections = chado_query($sql_collection);    
     if ($collections->rowCount() > 0) {
       foreach($collections as $collection) {
+        // Collection id number - Collection Name: Field will return
+        // collection id number, NOT THE NAME.
         $collection_options[ $collection->id ] = $collection->name;
       }
     }
@@ -173,7 +175,7 @@ class KPSEARCH extends ChadoCustomSearch {
     $q = drupal_get_query_parameters();
     
     // Refine collection options to only collection names
-    // where registered germplasm has the genus selected.
+    // where a registered germplasm has the genus of the selected genus.
     if (isset($q) && is_array($q) && $collection_options) {
       if (isset($q['genus']) && !empty($q['genus'])) {
         $genus = $q['genus'];
@@ -192,7 +194,7 @@ class KPSEARCH extends ChadoCustomSearch {
         $new_collection_options = [0 => $default_text];
         foreach($collection_options as $i => $collection) {
           if ($i > 0) {
-            // Skip default select option.
+            // Skip default select option 0.
 
             $has_genus = chado_query($sql_new_collection, [':genus' => $genus, ':collection' => $i])
               ->fetchObject();
@@ -203,14 +205,18 @@ class KPSEARCH extends ChadoCustomSearch {
           }
         }
       }
+      
+      // Use currently selected collection not the default.
+      $default_collection = $q['collection'];
     }
-
-    $options = (count($new_collection_options) > 0) ? $new_collection_options : $collection_options;
+    
+    $options = (count($new_collection_options) > 1) ? $new_collection_options : $collection_options;
+    $collection_field = $class::$info['filters']['collection'];
 
     $form['collection'] = array(
       '#type' => 'select',
-      '#title' => $class::$info['filters']['collection']['title'],
-      '#description' => $class::$info['filters']['collection']['help'],
+      '#title' => t($collection_field['title']),
+      '#description' => t($collection_field['help']),
       '#options' => $options,
       '#default_value' => $default_collection
     );

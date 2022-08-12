@@ -128,7 +128,7 @@ class GermplasmSearch extends KPSEARCH {
         'help' => 'The country the seed originated from.'
       ],
       'collection' => [
-        'title' => 'Collection/Population',
+        'title' => 'Collection',
         'help' => 'The collection or population the germplasm is part of.'
       ],
       'source_institute' => [
@@ -293,13 +293,17 @@ class GermplasmSearch extends KPSEARCH {
         s.stock_id,
         tb.label as type,
         origin.value as origin,
-        source.value as source_institute
+        source.value as source_institute,
+        col.name as collection
       FROM {stock} s
       LEFT JOIN {organism} o ON o.organism_id=s.organism_id
       LEFT JOIN {stockprop} source ON source.stock_id=s.stock_id AND source.type_id=3711
       LEFT JOIN {stockprop} origin ON origin.stock_id=s.stock_id AND origin.type_id=3976
       LEFT JOIN chado_bundle cb ON cb.type_id=s.type_id
-      LEFT JOIN tripal_bundle tb ON tb.id=cb.bundle_id ";
+      LEFT JOIN tripal_bundle tb ON tb.id=cb.bundle_id 
+      LEFT JOIN {stockcollection_stock} c ON s.stock_id = c.stock_id 
+      LEFT JOIN {stockcollection} col ON c.stockcollection_id = col.stockcollection_id
+      ";
 
     $where = [];
     $joins = [];
@@ -332,6 +336,12 @@ class GermplasmSearch extends KPSEARCH {
     if ($filter_results['origin'] != '') {
       $where[] = "origin.value ~* :origin";
       $args[':origin'] = $filter_results['origin'];
+    }
+
+    // -- Collection: 0 - select all.
+    if ($filter_results['collection'] > 0) {
+      $where[] = "col.stockcollection_id = :collection";
+      $args[':collection'] = $filter_results['collection'];
     }
 
     // -- Name.
