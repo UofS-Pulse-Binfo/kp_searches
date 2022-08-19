@@ -179,24 +179,37 @@ class KPSEARCH extends ChadoCustomSearch {
     if (isset($q) && is_array($q) && $collection_options) {
       if (isset($q['genus']) && !empty($q['genus'])) {
         $genus = $q['genus'];
-        
+        $species = (empty($q['species'])) ? '' : $q['species']; 
+
         // A single stock matching the genus (from collection) would be enough
         // to satisfy that collection has a germplasm with the genus.
         $sql_new_collection = "
           SELECT stock_id AS id FROM {stock} INNER JOIN {organism} USING(organism_id) 
-          WHERE organism.genus = :genus AND stock.stock_id IN 
+          WHERE organism.genus = :genus %s AND stock.stock_id IN 
             (SELECT stock_id FROM {stockcollection_stock} WHERE stockcollection_id = :collection) 
           LIMIT 1
         ";
         
+        // Add filter by species. GENUS + SPECIES.
+        $filter = '';
+        $args = [];
+        if (!empty($species)) {
+          $filter = 'AND organism.species = :species';
+          $args[':species'] = $species;
+        } 
+
+        $sql_new_collection = sprintf($sql_new_collection, $filter);
+
         // When user starts selecting filters... prepare
         // collection field and suggest relevant to selections.
         $new_collection_options = [0 => $default_text];
         foreach($collection_options as $i => $collection) {
           if ($i > 0) {
             // Skip default select option 0.
+            $args[':genus'] = $genus;
+            $args[':collection'] = $i;
 
-            $has_genus = chado_query($sql_new_collection, [':genus' => $genus, ':collection' => $i])
+            $has_genus = chado_query($sql_new_collection, $args)
               ->fetchObject();
 
             if ($has_genus && $has_genus->id > 0) {
