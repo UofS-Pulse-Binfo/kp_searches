@@ -136,6 +136,7 @@ class KPSEARCH extends ChadoCustomSearch {
     $form['scientific_name']['species']['#options'] = $species;
     $form['scientific_name']['species']['#empty_option'] = '- Select Species -';
     $form['scientific_name']['species']['#default_value'] = $species_default;
+    $form['scientific_name']['species']['#attributes'] = ['onchange' => 'this.form.submit();'];
     unset($form['species']);
   }
 
