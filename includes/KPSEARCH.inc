@@ -198,8 +198,8 @@ class KPSEARCH extends ChadoCustomSearch {
 
             $has_genus = chado_query($sql_new_collection, [':genus' => $genus, ':collection' => $i])
               ->fetchObject();
-            
-            if ($has_genus && $has_genus > 0) {
+
+            if ($has_genus && $has_genus->id > 0) {
               $new_collection_options[ $i ] = $collection;
             }
           }
@@ -210,7 +210,10 @@ class KPSEARCH extends ChadoCustomSearch {
       $default_collection = $q['collection'];
     }
     
-    $options = (count($new_collection_options) > 1) ? $new_collection_options : $collection_options;
+    $options = (empty($genus) && count($new_collection_options) < 1) 
+      ? $collection_options : $new_collection_options;
+    
+    // Field collection render array.
     $collection_field = $class::$info['filters']['collection'];
 
     $form['collection'] = array(
