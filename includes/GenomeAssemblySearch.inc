@@ -32,6 +32,13 @@ class GenomeAssemblySearch extends KPSEARCH {
   public static $permissions = ['access content'];
 
   /**
+   * The machine names of the permissions required to access private content
+   * in this search. Note: "private content" is indicated by Private Biodata
+   * (https://github.com/tripal/private_biodata) module.
+   */
+  public static $private_permissions = ['administrator', 'Unpublished Genome Access', 'University of Saskatchewan'];
+
+  /**
    * If TRUE, this search will require the submit button to be clicked before
    * executing the query; whereas, if FALSE it will be executed on the
    * first page load without parameters.
@@ -161,24 +168,32 @@ class GenomeAssemblySearch extends KPSEARCH {
    */
   public function getQuery(&$query, &$args, $offset) {
 
+    // Determine if this user has private access.
+    global $user;
+    $can_view_private = FALSE;
+    foreach ($this::$private_permissions as $permission_name) {
+      if (array_search($permission_name, $user->roles) !== FALSE) {
+        $can_view_private = TRUE;
+      }
+    }
+
     // Retrieve the filter results already set.
     $filter_results = $this->values;
     // @debug dpm($filter_results, '$filter_results');
 
- 
     $query = "
      SELECT
-        a.analysis_id, 
+        a.analysis_id,
         a.name,
-        a.description, 
-	a.sourcename, 
-	a.timeexecuted as date_released, 
+        a.description,
+	      a.sourcename,
+	      a.timeexecuted as date_released,
         n50.value ||'/'|| l50.value as stats,
         genus.value as genus
      FROM chado.analysis a
-     LEFT JOIN chado.analysisprop n50 ON n50.analysis_id=a.analysis_id 
-	AND n50.type_id=6773
-     LEFT JOIN chado.analysisprop l50 ON l50.analysis_id=a.analysis_id 
+     LEFT JOIN chado.analysisprop n50 ON n50.analysis_id=a.analysis_id
+	      AND n50.type_id=6773
+     LEFT JOIN chado.analysisprop l50 ON l50.analysis_id=a.analysis_id
         AND l50.type_id=6775
      LEFT JOIN chado.analysisprop genus ON genus.analysis_id=a.analysis_id
         AND genus.type_id=4032";
@@ -187,7 +202,7 @@ class GenomeAssemblySearch extends KPSEARCH {
     $joins = [];
 
     $where[] = "a.analysis_id IN (
-	SELECT analysis_id FROM chado.analysisprop 
+	SELECT analysis_id FROM chado.analysisprop
 	WHERE type_id=4310 AND value=:content_type)";
     $args[':content_type'] = 'genome_assembly';
     // -- Genus.
@@ -208,9 +223,16 @@ class GenomeAssemblySearch extends KPSEARCH {
       $args[':name'] = $filter_results['name'];
     }
 
+    // -- Private Assemblies.
+    if ($can_view_private === FALSE) {
+      $joins[] = "LEFT JOIN chado_bio_data_33 bio ON bio.record_id=a.analysis_id";
+      $joins[] = "LEFT JOIN private_biodata ON bio.entity_id=private_biodata.entity_id";
+      $where[] = "private_biodata.private IS NULL";
+    }
+
     // Finally, add it to the query.
     if (!empty($joins)) {
-      $query .= implode("\n",$joins);
+      $query .= "\n" . implode("\n",$joins);
     }
     if (!empty($where)) {
       $query .= "\n" . ' WHERE ' . implode(' AND ',$where);
