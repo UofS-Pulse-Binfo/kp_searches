@@ -94,6 +94,9 @@ class CultivarSearch extends GermplasmSearch {
           'id_column' => 'dad_id'
         ],
       ],
+      'collection' => [
+        'title' => 'Collection'
+      ],
       'source_institute' => [
         'title' => 'Source Institute',
       ],
@@ -114,6 +117,10 @@ class CultivarSearch extends GermplasmSearch {
       'species' => [
         'title' => 'Species',
         'help' => 'The legume species the germplasm belongs to (e.g. culinaris).',
+      ],
+      'collection' => [
+        'title' => 'Collection',
+        'help' => 'The collection or population the germplasm is part of.'
       ],
       'source_institute' => [
         'title' => 'Source Institute',
@@ -166,6 +173,9 @@ class CultivarSearch extends GermplasmSearch {
     // Add a Scientific name selector.
     $this->addSpeciesFormElement($form, $form_state);
 
+    // Add collection/population selector.
+    $this->addCollectionFormElement($form, $form_state);
+
     // Add a Maternal/paternal name selector.
     $this->addparentageFormElement($form, $form_state);
 
@@ -212,7 +222,8 @@ class CultivarSearch extends GermplasmSearch {
         mom.name as mom,
         mom.stock_id as mom_id,
         dad.name as dad,
-        dad.stock_id as dad_id
+        dad.stock_id as dad_id,
+        col.name as collection
       FROM {stock} s
       LEFT JOIN {organism} o ON o.organism_id=s.organism_id
       LEFT JOIN {stockprop} source ON source.stock_id=s.stock_id AND source.type_id=3711
@@ -230,7 +241,9 @@ class CultivarSearch extends GermplasmSearch {
       LEFT JOIN {stock_relationship} dadr
         ON (dadr.object_id=origcross.object_id OR dadr.object_id=regcultivar.object_id)
         AND dadr.type_id=3633
-      LEFT JOIN {stock} dad ON dadr.subject_id=dad.stock_id";
+      LEFT JOIN {stock} dad ON dadr.subject_id=dad.stock_id
+      LEFT JOIN {stockcollection_stock} c ON s.stock_id = c.stock_id 
+      LEFT JOIN {stockcollection} col ON c.stockcollection_id = col.stockcollection_id";
 
     $where = [];
     $joins = [];
@@ -249,6 +262,12 @@ class CultivarSearch extends GermplasmSearch {
     if ($filter_results['species'] != '') {
       $where[] = "o.species ~ :species";
       $args[':species'] = $filter_results['species'];
+    }
+
+    // -- Collection: 0 - select all.
+    if ($filter_results['collection'] > 0) {
+      $where[] = "col.stockcollection_id = :collection";
+      $args[':collection'] = $filter_results['collection'];
     }
 
     // -- Source Institute.

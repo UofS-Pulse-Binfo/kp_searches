@@ -136,7 +136,106 @@ class KPSEARCH extends ChadoCustomSearch {
     $form['scientific_name']['species']['#options'] = $species;
     $form['scientific_name']['species']['#empty_option'] = '- Select Species -';
     $form['scientific_name']['species']['#default_value'] = $species_default;
+    $form['scientific_name']['species']['#attributes'] = ['onchange' => 'this.form.submit();'];
     unset($form['species']);
   }
 
+  /**
+   * Add field to allow filter based on germplasm collection
+   * or population information.
+   * 
+   * Source: stockcollection, stockcollection_stock and stock tables.
+   *
+   * @param $form
+   *   Drupal form object.
+   * @param $form_state
+   *   Drupal form state object.
+   */
+  public function addCollectionFormElement(&$form, &$form_state) {
+    $class = get_called_class();
+     
+    $default_text = '- Select -';
+    // Set default to all collection.
+    $collection_options = [0 => $default_text]; 
+    // Default to select (option 0 above array, of the field).
+    $default_collection = 0; 
+
+    // Get collections in chado.stockcollections.
+    $sql_collection = "SELECT stockcollection_id AS id, name 
+      FROM chado.stockcollection ORDER BY name ASC";
+    
+    $collections = chado_query($sql_collection);    
+    if ($collections->rowCount() > 0) {
+      foreach($collections as $collection) {
+        // Collection id number - Collection Name: Field will return
+        // collection id number, NOT THE NAME.
+        $collection_options[ $collection->id ] = $collection->name;
+      }
+    }
+    
+    $q = drupal_get_query_parameters();
+    
+    // Refine collection options to only collection names
+    // where a registered germplasm has the genus of the selected genus.
+    if (isset($q) && is_array($q) && $collection_options) {
+      if (isset($q['genus']) && !empty($q['genus'])) {
+        $genus = $q['genus'];
+        $species = (empty($q['species'])) ? '' : $q['species']; 
+
+        // A single stock matching the genus (from collection) would be enough
+        // to satisfy that collection has a germplasm with the genus.
+        $sql_new_collection = "
+          SELECT stock_id AS id FROM {stock} INNER JOIN {organism} USING(organism_id) 
+          WHERE organism.genus = :genus %s AND stock.stock_id IN 
+            (SELECT stock_id FROM {stockcollection_stock} WHERE stockcollection_id = :collection) 
+          LIMIT 1
+        ";
+        
+        // Add filter by species. GENUS + SPECIES.
+        $filter = '';
+        $args = [];
+        if (!empty($species)) {
+          $filter = 'AND organism.species = :species';
+          $args[':species'] = $species;
+        } 
+
+        $sql_new_collection = sprintf($sql_new_collection, $filter);
+
+        // When user starts selecting filters... prepare
+        // collection field and suggest relevant to selections.
+        $new_collection_options = [0 => $default_text];
+        foreach($collection_options as $i => $collection) {
+          if ($i > 0) {
+            // Skip default select option 0.
+            $args[':genus'] = $genus;
+            $args[':collection'] = $i;
+
+            $has_genus = chado_query($sql_new_collection, $args)
+              ->fetchObject();
+
+            if ($has_genus && $has_genus->id > 0) {
+              $new_collection_options[ $i ] = $collection;
+            }
+          }
+        }
+      }
+      
+      // Use currently selected collection not the default.
+      $default_collection = $q['collection'];
+    }
+    
+    $options = (empty($genus) && count($new_collection_options) < 1) 
+      ? $collection_options : $new_collection_options;
+    
+    // Field collection render array.
+    $collection_field = $class::$info['filters']['collection'];
+
+    $form['collection'] = array(
+      '#type' => 'select',
+      '#title' => t($collection_field['title']),
+      '#description' => t($collection_field['help']),
+      '#options' => $options,
+      '#default_value' => $default_collection
+    );
+  }
 }
