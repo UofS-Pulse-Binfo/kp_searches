@@ -217,7 +217,7 @@ class GeneticMapSearch extends KPSEARCH {
 
     // -- Population Type.
     if ($filter_results['pop_type'] != '') {
-      $where[] = "pop_type.value ~ :pop_type";
+      $where[] = "pop_type.value = :pop_type";
       $args[':pop_type'] = $filter_results['pop_type'];
     }
 
