@@ -202,7 +202,7 @@ class ResearchStudySearch extends KPSEARCH {
 
     // -- Name.
     if ($filter_results['name'] != '') {
-      $where[] = "exp.name ~ :name";
+      $where[] = "exp.name ~* :name";
       $args[':name'] = $filter_results['name'];
     }
 
