@@ -175,7 +175,7 @@ class ResearchStudySearch extends KPSEARCH {
         cat.value as category
       FROM {project} exp
       LEFT JOIN {projectprop} genus ON genus.project_id=exp.project_id
-        AND genus.type_id IN (SELECT cvterm_id FROM {cvterm} WHERE name='genus')
+        AND genus.type_id=4032 AND genus.rank=0 
       LEFT JOIN {projectprop} yr ON yr.project_id=exp.project_id
         AND yr.type_id=6364 AND yr.rank=0
       LEFT JOIN {projectprop} cat ON cat.project_id=exp.project_id
